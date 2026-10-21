@@ -82,3 +82,13 @@ function yts_unlinked_ids( $show_id ) {
 	}
 	return array_values( array_diff( $ids, $linked ) );
 }
+
+/** Título de un programa de Streamit a partir de su ID (con caché por petición). */
+function yts_show_title( $id ) {
+	static $map = null;
+	if ( null === $map ) {
+		$map = [];
+		foreach ( yts_shows() as $sh ) $map[ (int) $sh->ID ] = $sh->post_title;
+	}
+	return isset( $map[ (int) $id ] ) ? $map[ (int) $id ] : '';
+}

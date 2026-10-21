@@ -9,7 +9,8 @@ Plugin de WordPress que **importa automáticamente los videos de tus playlists d
 - Un programa de Streamit = una playlist de YouTube. Cada video nuevo se crea como episodio, con título, descripción y miniatura (convertida a WebP si el servidor puede).
 - Activa o desactiva programas con una palomita, o sincroniza uno solo a mano.
 - Lee YouTube por su **API oficial** (recomendado) o por el **feed RSS** como respaldo, con reintentos.
-- Panel con **verificación del sistema**, registro de cada sincronización y lista de episodios importados.
+- Menú propio **YouTube a Streamit** con cinco secciones: *Programas sincronizados*, *Ajustes*, *Herramientas*, *Episodios importados* y *Verificación del sistema*.
+- Selector de programa **con buscador** y lista de programas **paginada** (pensado para muchos programas).
 - Herramienta para **reparar** episodios que no quedaron enlazados a su programa.
 
 ## Requisitos
@@ -21,16 +22,15 @@ Plugin de WordPress que **importa automáticamente los videos de tus playlists d
 
 1. Descarga el ZIP `yt-to-streamit-x.y.z.zip` (sección *Releases*).
 2. En WordPress: **Plugins → Añadir nuevo → Subir plugin** y activa «YouTube a Streamit».
-3. Ve a **Ajustes → YouTube a Streamit**.
+3. Abre **YouTube a Streamit** en el menú lateral de WordPress.
 
 ## Configuración rápida
 
-1. **Cómo cargas el video hoy:** código embed o URL (usa la misma opción que tus episodios actuales).
-2. **Importar videos desde:** fecha desde la cual se importan videos (evita traer todo el historial).
-3. **Agrega tus programas:** pega la URL o el ID de la playlist, elige el programa de Streamit y el capítulo en que quieres el aviso.
-4. **Correo de aviso** y **Guardar cambios**.
-5. Presiona **Verificar + prueba de creación** y revisa que todo salga en verde.
-6. Empieza con *Estado al importar = Borrador*; cuando confirmes que se ve bien, cambia a *Publicado*.
+1. **Ajustes:** elige cómo cargas el video hoy (código embed o URL, igual que tus episodios actuales), tu correo de aviso y la frecuencia. Guarda.
+2. **Programas sincronizados → + Agregar programa:** busca y elige el programa de Streamit, pega la URL o el ID de su playlist y define el capítulo en que quieres el aviso.
+3. En la misma página, define **Importar videos desde** (evita traer todo el historial) y **Estado al importar**. Empieza en *Borrador*. **Guardar cambios**.
+4. **Verificación del sistema → Verificar + prueba de creación:** todo debería salir en verde.
+5. Presiona **Sincronizar ahora**, revisa un episodio en Streamit y, cuando se vea bien, cambia a *Publicado*.
 
 La sincronización automática corre **cada 12 horas** por defecto; puedes cambiarla en *Frecuencia de sincronización* (30 min, 1 h, 6 h, 12 h o 24 h). Usa WP-Cron, que solo se dispara cuando alguien visita el sitio. Para importar al instante, usa **Sincronizar ahora**.
 
@@ -67,7 +67,8 @@ Más detalle en [MANTENIMIENTO.md](MANTENIMIENTO.md).
 ## Desarrollo
 
 ```bash
-php tests/smoke-test.php   # prueba rápida sin WordPress (44 comprobaciones)
+php tests/smoke-test.php                                   # lógica del plugin, sin WordPress (70 comprobaciones)
+npm install jsdom --no-save && node tests/panel-test.js    # JavaScript del panel (24 comprobaciones, opcional)
 ```
 
 Estructura y recetas para modificar el plugin: [MANTENIMIENTO.md](MANTENIMIENTO.md). Historial de cambios: [CHANGELOG.md](CHANGELOG.md).

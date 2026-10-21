@@ -3,7 +3,7 @@
  * Plugin Name:       YouTube a Streamit
  * Plugin URI:        https://github.com/lulubumps/yt-to-streamit
  * Description:       Importa automáticamente los videos de playlists de YouTube como episodios de Streamit y avisa por correo al llegar a un capítulo. Proyecto independiente, no afiliado a Iqonic ni a Streamit.
- * Version:           3.2.0
+ * Version:           3.3.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Lulubumps
@@ -17,9 +17,10 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'YTS_VERSION', '3.2.0' );
+define( 'YTS_VERSION', '3.3.0' );
 define( 'YTS_FILE', __FILE__ );
 define( 'YTS_DIR', plugin_dir_path( __FILE__ ) );
+define( 'YTS_URL', plugin_dir_url( __FILE__ ) );
 
 // Núcleo (se usa también cuando corre el cron, sin panel)
 require_once YTS_DIR . 'includes/settings.php';
@@ -33,8 +34,14 @@ require_once YTS_DIR . 'includes/cron.php';
 // Panel de administración (solo se carga en el escritorio de WordPress)
 if ( is_admin() ) {
 	require_once YTS_DIR . 'includes/diagnostics.php';
-	require_once YTS_DIR . 'includes/admin-page.php';
-	require_once YTS_DIR . 'includes/admin-actions.php';
+	require_once YTS_DIR . 'includes/admin/menu.php';
+	require_once YTS_DIR . 'includes/admin/components.php';
+	require_once YTS_DIR . 'includes/admin/page-programs.php';
+	require_once YTS_DIR . 'includes/admin/page-settings.php';
+	require_once YTS_DIR . 'includes/admin/page-tools.php';
+	require_once YTS_DIR . 'includes/admin/page-imported.php';
+	require_once YTS_DIR . 'includes/admin/page-verify.php';
+	require_once YTS_DIR . 'includes/admin/actions.php';
 }
 
 register_activation_hook( __FILE__, 'yts_activate' );

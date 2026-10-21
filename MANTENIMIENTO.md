@@ -15,10 +15,19 @@ Cómo está armado el plugin y cómo modificarlo sin romperlo.
 | `includes/importer.php` | Sincroniza, crea episodios, enlaza a temporada, repara, bloqueo | Cambias cómo se importa |
 | `includes/cron.php` | Frecuencias disponibles y programación de la tarea | Agregas una frecuencia nueva |
 | `includes/diagnostics.php` | Comprobaciones de la «Verificación del sistema» | Agregas una comprobación |
-| `includes/admin-page.php` | Todo lo que se ve en el panel | Cambias textos o diseño |
-| `includes/admin-actions.php` | Guarda ajustes y atiende los botones | Agregas un botón o acción |
+| `includes/admin/menu.php` | Menú, pestañas, encabezado común y carga de CSS/JS | Agregas una sección nueva |
+| `includes/admin/page-programs.php` | **Programas sincronizados** (página principal): tabla, buscador, paginación, importación | Cambias la tabla de programas |
+| `includes/admin/page-settings.php` | **Ajustes**: frecuencia, correo, video, modelo, autor, WebP, API key | Agregas un ajuste |
+| `includes/admin/page-tools.php` | **Herramientas**: acciones manuales y visor de campos | Agregas una herramienta |
+| `includes/admin/page-imported.php` | **Episodios importados** | Cambias esa lista |
+| `includes/admin/page-verify.php` | **Verificación del sistema** (botones + informe) | Cambias su presentación |
+| `includes/admin/components.php` | Piezas compartidas: botón Cerrar, informe, registro | Cambias el informe o el registro |
+| `includes/admin/actions.php` | Guarda por secciones y atiende los botones | Agregas un botón o un ajuste |
+| `assets/admin.js` | Selector con buscador, paginación y filtro, agregar/quitar filas | Cambias el comportamiento del panel |
+| `assets/admin.css` | Estilos del panel | Cambias el diseño |
 | `uninstall.php` | Limpieza al borrar el plugin | Agregas opciones nuevas |
-| `tests/smoke-test.php` | Prueba rápida sin WordPress | Agregas lógica nueva |
+| `tests/smoke-test.php` | Prueba rápida de la lógica PHP, sin WordPress | Agregas lógica nueva |
+| `tests/panel-test.js` | Prueba del JavaScript del panel (opcional, usa jsdom) | Cambias `assets/admin.js` |
 
 Dependencias entre archivos: `importer` usa `youtube`, `streamit`, `thumbnails` y `notifications`; el panel (`admin-*`, `diagnostics`) usa al resto. Los archivos del panel solo se cargan en el escritorio de WordPress; el cron carga solo el núcleo.
 
@@ -33,7 +42,7 @@ Dependencias entre archivos: `importer` usa `youtube`, `streamit`, `thumbnails` 
 
 1. Edita el archivo que corresponde (tabla de arriba).
 2. Revisa la sintaxis: `for f in $(find . -name '*.php'); do php -l "$f"; done`
-3. Corre `php tests/smoke-test.php`. Debe terminar en `TODO OK`. Si agregaste lógica, agrega su comprobación al final del archivo de pruebas.
+3. Corre `php tests/smoke-test.php`. Debe terminar en `TODO OK`. Si agregaste lógica, agrega su comprobación al final del archivo de pruebas. Si tocaste `assets/admin.js`, corre también `node tests/panel-test.js` (ver README).
 4. En el entorno de pruebas: **Ajustes → YouTube a Streamit → Verificar + prueba de creación**. Todo en ✅ (o ⚠️ explicables).
 5. Sincroniza con el estado en *Borrador* y revisa un episodio completo en Streamit.
 6. Sube la versión en **dos** lugares: la cabecera de `yt-to-streamit.php` (`Version:`) y la constante `YTS_VERSION`. Anota el cambio en `CHANGELOG.md`.
@@ -43,15 +52,20 @@ Dependencias entre archivos: `importer` usa `youtube`, `streamit`, `thumbnails` 
 
 ### Agregar un ajuste nuevo
 1. `settings.php` → agrega su valor por defecto en `yts_settings()`.
-2. `admin-page.php` → agrega el campo en la tabla «Opciones» (`name="mi_ajuste"`).
-3. `admin-actions.php` → en `yts_save`, agrégalo al arreglo de `update_option` **sanitizado**.
+2. `admin/page-settings.php` → agrega el campo en la tabla que corresponda (`name="mi_ajuste"`). Si es de importación, va en `admin/page-programs.php`.
+3. `admin/actions.php` → en `yts_handle_save`, en la sección `settings` (o `programs`), guárdalo **sanitizado** en `$s['mi_ajuste']`. Cada formulario solo cambia los campos de su sección.
 4. Úsalo con `yts_settings()['mi_ajuste']`.
 5. Si es una opción nueva distinta de `yts_settings`, agrégala también a `uninstall.php`.
 
 ### Agregar un botón
-1. `admin-page.php` → `<button type="submit" form="yts-actions" name="yts_do" value="mi_accion" class="button">Texto</button>`
-2. `admin-actions.php` → en `yts_handle_action()`, agrega `case 'mi_accion':` con tu lógica y termina con `yts_back( 'Mensaje' );`.
+1. En la página donde va (`admin/page-*.php`) → `<button type="submit" form="yts-actions" name="yts_do" value="mi_accion" class="button">Texto</button>`
+2. `admin/actions.php` → en `yts_handle_action()`, agrega `case 'mi_accion':` con tu lógica y termina con `yts_back( 'Mensaje', $ret );`. El botón vuelve solo a la página desde la que se pulsó.
 3. No necesitas nonce ni permisos nuevos: el despachador ya los exige.
+
+### Agregar una sección (pestaña) nueva al panel
+1. Crea `includes/admin/page-mi-seccion.php` con una función `yts_page_mi_seccion()` que abra con `yts_admin_header( 'yts-mi-seccion' );` y cierre con `yts_admin_footer();` (copia `page-tools.php` como base).
+2. `admin/menu.php` → agrégala a `yts_pages()` (slug => [ título, función ]). El menú y las pestañas se arman solos.
+3. `yt-to-streamit.php` → agrega su `require_once` en el bloque del panel.
 
 ### Cambiar la frecuencia de sincronización
 Se elige en el panel (**Frecuencia de sincronización**); al guardar, la tarea se reprograma sola. Por defecto es cada 12 horas.
@@ -99,7 +113,7 @@ Después corre «Verificar + prueba de creación»: si Streamit rechaza el episo
 
 Desde la carpeta que contiene `yt-to-streamit/`:
 ```bash
-zip -r yt-to-streamit-3.1.0.zip yt-to-streamit -x 'yt-to-streamit/tests/*' 'yt-to-streamit/.gitignore' 'yt-to-streamit/.git/*'
+zip -r yt-to-streamit-3.3.0.zip yt-to-streamit -x 'yt-to-streamit/tests/*' 'yt-to-streamit/.gitignore' 'yt-to-streamit/.git/*'
 ```
 La carpeta dentro del ZIP debe llamarse `yt-to-streamit`. Súbelo como *Release* en GitHub; el ZIP automático de GitHub trae otro nombre de carpeta y no sirve para instalar directamente.
 

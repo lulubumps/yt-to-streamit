@@ -2,6 +2,18 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [3.3.0]
+
+### Panel
+- El plugin sale de *Ajustes* y tiene **menú propio** «YouTube a Streamit» con cinco secciones: Programas sincronizados (la primera), Ajustes, Herramientas, Episodios importados y Verificación del sistema.
+- **Programas sincronizados** reúne la tabla de programas con las opciones de importación (*Importar videos desde* y *Estado al importar*).
+- El selector de programa de Streamit ahora es un **selector con buscador** (sin acentos, por nombre o ID, con teclado).
+- La lista de programas y la de episodios importados están **paginadas**; la de programas tiene además un filtro.
+- Guardar es por secciones: cada formulario solo cambia sus propios ajustes.
+- Los botones vuelven a la página desde la que se pulsaron.
+- El código del panel se separa en `includes/admin/` y el JavaScript/CSS en `assets/`.
+- Nueva prueba del JavaScript del panel: `node tests/panel-test.js` (opcional).
+
 ## [3.2.0]
 
 - Nuevo ajuste **Frecuencia de sincronización** (30 min, 1 h, 6 h, 12 h o 24 h). Por defecto, cada 12 horas.

@@ -63,7 +63,14 @@ function yts_handle_save() {
 		$s['notify_email']     = sanitize_email( wp_unslash( isset( $_POST['notify_email'] ) ? $_POST['notify_email'] : '' ) );
 		$s['video_method']     = ( isset( $_POST['video_method'] ) && 'episode_url' === $_POST['video_method'] ) ? 'episode_url' : 'episode_embed';
 		$s['template_episode'] = absint( isset( $_POST['template_episode'] ) ? $_POST['template_episode'] : 0 );
-		$s['author_id']        = absint( isset( $_POST['author_id'] ) ? $_POST['author_id'] : 0 );
+		// Autor: solo un administrador de la lista (0 = automático)
+		$author = absint( isset( $_POST['author_id'] ) ? $_POST['author_id'] : 0 );
+		$admin_ids = [];
+		foreach ( yts_admins() as $u ) $admin_ids[] = (int) $u->ID;
+		if ( ! in_array( $author, $admin_ids, true ) ) $author = 0;
+
+		$s['author_id']        = $author;
+		$s['max_per_run']      = min( 100, max( 1, absint( isset( $_POST['max_per_run'] ) ? $_POST['max_per_run'] : 10 ) ) );
 		$s['thumb_webp']       = empty( $_POST['thumb_webp'] ) ? 0 : 1;
 		$s['frequency']        = $freq;
 		$s['youtube_api_key']  = $api_key;
@@ -86,12 +93,6 @@ function yts_handle_save() {
  * ------------------------------------------------------------------ */
 add_action( 'admin_post_yts_do', 'yts_handle_action' );
 
-function yts_count_created( $log ) {
-	$n = 0;
-	foreach ( $log as $r ) if ( isset( $r[4] ) && 0 === strpos( $r[4], 'Creado' ) ) $n++;
-	return $n;
-}
-
 function yts_handle_action() {
 	if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Sin permiso' );
 	check_admin_referer( 'yts_do', 'yts_nonce' );
@@ -113,14 +114,12 @@ function yts_handle_action() {
 		if ( ! isset( $s['programs'][ $i ] ) ) yts_back( 'No encontré ese programa. Guarda los cambios y vuelve a intentarlo.', $ret );
 		$p    = $s['programs'][ $i ];
 		$name = ! empty( $p['label'] ) ? $p['label'] : $p['playlist'];
-		$n    = yts_count_created( yts_run( false, $i ) );
-		yts_back( "Programa «{$name}» sincronizado: $n episodio(s) creado(s). Mira el detalle abajo.", $ret );
+		yts_back( "Programa «{$name}» sincronizado: " . yts_summary( yts_run( false, $i ) ) . '. Mira el detalle abajo.', $ret );
 	}
 
 	switch ( $do ) {
 		case 'run_now':
-			$n = yts_count_created( yts_run() );
-			yts_back( "Sincronización ejecutada: $n episodio(s) creado(s). Mira el detalle abajo.", $ret );
+			yts_back( 'Sincronización ejecutada: ' . yts_summary( yts_run() ) . '. Mira el detalle abajo.', $ret );
 
 		case 'diag':
 			yts_run( true );

@@ -67,7 +67,7 @@ Más detalle en [MANTENIMIENTO.md](MANTENIMIENTO.md).
 ## Desarrollo
 
 ```bash
-php tests/smoke-test.php                                   # lógica del plugin, sin WordPress (70 comprobaciones)
+php tests/smoke-test.php                                   # lógica del plugin, sin WordPress (84 comprobaciones)
 npm install jsdom --no-save && node tests/panel-test.js    # JavaScript del panel (24 comprobaciones, opcional)
 ```
 

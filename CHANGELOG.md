@@ -2,6 +2,13 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [3.4.0]
+
+- **Autor de los episodios:** ahora se elige de una lista de los usuarios administradores (ya no hay que escribir su ID). Si el elegido deja de ser administrador, se usa el primer administrador.
+- **Máximo por pasada configurable** en *Ajustes* (por defecto 10 episodios por programa; el filtro `yts_max_imports_per_run` sigue teniendo prioridad).
+- **Continuación automática:** si una sincronización deja videos pendientes por ese límite, el plugin programa otra pasada a los 2 minutos en vez de esperar a la próxima sincronización.
+- El aviso tras sincronizar indica cuántos videos quedaron pendientes.
+
 ## [3.3.0]
 
 ### Panel

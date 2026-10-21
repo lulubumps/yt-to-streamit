@@ -37,6 +37,7 @@ add_filter( 'cron_schedules', function ( $s ) {
 } );
 
 add_action( 'yts_sync', 'yts_run' );
+add_action( 'yts_sync_followup', 'yts_run_followup' );
 
 /** Borra la tarea programada y la crea de nuevo con la frecuencia actual. */
 function yts_reschedule() {
@@ -55,4 +56,5 @@ function yts_activate() {
 
 function yts_deactivate() {
 	wp_clear_scheduled_hook( 'yts_sync' );
+	wp_clear_scheduled_hook( 'yts_sync_followup' );
 }

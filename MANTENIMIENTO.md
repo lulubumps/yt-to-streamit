@@ -73,7 +73,7 @@ Se elige en el panel (**Frecuencia de sincronización**); al guardar, la tarea s
 Para agregar una frecuencia nueva (por ejemplo, cada 2 horas): en `cron.php` registra el intervalo en el filtro `cron_schedules` (`$s['yts_2h'] = [ 'interval' => 7200, 'display' => 'Cada 2 horas' ];`) y agrégalo a la lista de `yts_frequencies()`.
 
 ### Cambiar el máximo de episodios por pasada
-Por defecto 10 por programa. Sin tocar el plugin, en el `functions.php` de tu tema hijo:
+Se configura en **Ajustes → Máximo por pasada** (por defecto 10 por programa). Si quedan videos pendientes, el plugin programa solo una continuación a los 2 minutos (evento `yts_sync_followup`). Para fijar el valor por código, que tiene prioridad sobre el ajuste, en el `functions.php` de tu tema hijo:
 ```php
 add_filter( 'yts_max_imports_per_run', function () { return 25; } );
 ```
@@ -104,7 +104,7 @@ Después corre «Verificar + prueba de creación»: si Streamit rechaza el episo
 | `HTTP 404 tras 3 intentos` | El feed RSS de YouTube falla de forma intermitente | Esperar, o configurar la API key |
 | `exceeded your quota` | Cuota diaria de la API agotada | Esperar al reinicio (medianoche, hora del Pacífico) o revisar quién la consume en Google Cloud |
 | `Omitido: … antes de la fecha de inicio` | La fecha es la de publicación del video, no la de agregarlo a la playlist | Ajustar *Importar videos desde* |
-| `Pendiente: se alcanzó el límite…` | Más de 10 videos nuevos en una pasada | Normal; se importan en las siguientes |
+| `Pendiente: se alcanzó el límite…` | Más videos nuevos que el máximo por pasada | Normal; el plugin continúa solo a los 2 minutos (con WP-Cron, cuando haya una visita). También puedes presionar de nuevo **Sincronizar ahora** |
 | `Ya hay una sincronización en curso` | Otra sincronización está corriendo | Esperar unos minutos (un bloqueo de más de 10 min se retoma solo) |
 | Episodios importados que no se ven en el programa | No quedaron enlazados a una temporada | Botón **Reparar enlaces** |
 | El cron no corre, o corre más tarde de lo esperado | WP-Cron solo se dispara con visitas, o está desactivado | Usar «Sincronizar ahora», o programar un cron real del hosting que llame a `wp-cron.php` |

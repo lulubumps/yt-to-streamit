@@ -20,6 +20,7 @@ function yts_settings() {
 		'author_id'        => 0,
 		'thumb_webp'       => 1,               // convertir miniaturas a WebP
 		'youtube_api_key'  => '',              // opcional: API de YouTube (más confiable que el feed RSS)
+		'max_per_run'      => 10,              // máximo de episodios por programa en cada pasada
 		'frequency'        => 'twicedaily',    // cada cuánto sincroniza solo (ver yts_frequencies() en cron.php)
 	];
 	return wp_parse_args( get_option( 'yts_settings', [] ), $defaults );
@@ -29,6 +30,11 @@ function yts_parse_playlist( $input ) {
 	$input = trim( $input );
 	if ( preg_match( '/[?&]list=([A-Za-z0-9_-]+)/', $input, $m ) ) return $m[1];
 	return preg_replace( '/[^A-Za-z0-9_-]/', '', $input );
+}
+
+/** Usuarios administradores (para elegir el autor de los episodios). Devuelve objetos con ID, display_name y user_login. */
+function yts_admins() {
+	return get_users( [ 'role' => 'administrator', 'orderby' => 'display_name', 'order' => 'ASC', 'fields' => [ 'ID', 'display_name', 'user_login' ] ] );
 }
 
 /** Un ID de video de YouTube son exactamente 11 caracteres [A-Za-z0-9_-]. Se valida porque el dato viene de fuera. */

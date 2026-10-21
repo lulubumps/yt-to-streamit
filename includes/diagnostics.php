@@ -93,7 +93,8 @@ function yts_checks( $write = false ) {
 	}
 
 	$aid = yts_author( $s );
-	$add( get_userdata( $aid ) ? 'ok' : 'fail', 'Usuario autor', get_userdata( $aid ) ? "Se usará el usuario #$aid." : "El usuario #$aid no existe." );
+	$au  = get_userdata( $aid );
+	$add( $au ? 'ok' : 'fail', 'Autor de los episodios', $au ? 'Se asignarán a ' . $au->display_name . " (#$aid)." . ( empty( $s['author_id'] ) ? ' (automático: primer administrador)' : '' ) : "El usuario #$aid no existe." );
 
 	// --- Programas ---
 	if ( ! $s['programs'] ) {

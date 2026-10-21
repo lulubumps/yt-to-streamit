@@ -30,6 +30,8 @@ function yts_page_settings() {
 					<?php endforeach; ?>
 				</select>
 				<p class="description">Cada cuánto revisa YouTube sola. Para importar al instante usa «Sincronizar ahora». WP-Cron solo corre cuando alguien visita el sitio.</p></td></tr>
+			<tr><th>Máximo por pasada</th><td><input type="number" min="1" max="100" name="max_per_run" value="<?php echo (int) $s['max_per_run']; ?>" style="width:80px"> episodios por programa en cada sincronización
+				<p class="description">Límite para no agotar el tiempo del servidor al convertir miniaturas. Si quedan videos pendientes, el plugin continúa solo a los pocos minutos.</p></td></tr>
 		</table>
 
 		<h2>Avisos por correo</h2>
@@ -48,8 +50,14 @@ function yts_page_settings() {
 				<p class="description">Usa la misma opción con la que ya cargas tus episodios hoy.</p></td></tr>
 			<tr><th>ID de un episodio modelo</th><td><input type="number" name="template_episode" value="<?php echo (int) $s['template_episode'] ? (int) $s['template_episode'] : ''; ?>" style="width:120px">
 				<p class="description">Opcional, pero recomendado: de este episodio se copian los demás campos de Streamit (calificación, visibilidad, etc.).</p></td></tr>
-			<tr><th>ID del usuario autor</th><td><input type="number" name="author_id" value="<?php echo (int) $s['author_id'] ? (int) $s['author_id'] : ''; ?>" style="width:120px">
-				<p class="description">Vacío = primer administrador.</p></td></tr>
+			<tr><th>Autor de los episodios</th><td>
+				<select name="author_id">
+					<option value="0">Automático (primer administrador)</option>
+					<?php foreach ( yts_admins() as $u ) : ?>
+						<option value="<?php echo (int) $u->ID; ?>" <?php selected( (int) $s['author_id'], (int) $u->ID ); ?>><?php echo esc_html( $u->display_name . ' (' . $u->user_login . ')' ); ?></option>
+					<?php endforeach; ?>
+				</select>
+				<p class="description">Usuario administrador al que se asignan los episodios importados.</p></td></tr>
 			<tr><th>Miniaturas en WebP</th><td><label><input type="checkbox" name="thumb_webp" value="1" <?php checked( $s['thumb_webp'] ); ?>> Convertir las miniaturas de YouTube a WebP (más livianas)</label>
 				<p class="description">Si el servidor no soporta WebP, se guarda el JPG original y queda un aviso en el registro de errores.</p></td></tr>
 		</table>

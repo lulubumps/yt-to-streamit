@@ -27,6 +27,33 @@ function yts_lock_release() {
 	delete_option( 'yts_lock' );
 }
 
+/** Cuántos episodios se crearon según el registro de una sincronización. */
+function yts_count_created( $log ) {
+	$n = 0;
+	foreach ( $log as $r ) if ( isset( $r[4] ) && 0 === strpos( $r[4], 'Creado' ) ) $n++;
+	return $n;
+}
+
+/** Cuántos videos quedaron pendientes por el límite de la pasada. */
+function yts_count_pending( $log ) {
+	$n = 0;
+	foreach ( $log as $r ) if ( isset( $r[4] ) && 0 === strpos( $r[4], 'Pendiente' ) ) $n++;
+	return $n;
+}
+
+/** Texto resumen: «3 episodio(s) creado(s), 2 pendiente(s) (…)». */
+function yts_summary( $log ) {
+	$txt = yts_count_created( $log ) . ' episodio(s) creado(s)';
+	$p   = yts_count_pending( $log );
+	if ( $p ) $txt .= ", $p pendiente(s): se importarán solos en unos minutos (también puedes volver a sincronizar)";
+	return $txt;
+}
+
+/** Continuación automática tras una pasada con videos pendientes (evento único de WP-Cron). */
+function yts_run_followup( $only = null ) {
+	yts_run( false, $only );
+}
+
 /**
  * Sincroniza los programas activos (o solo el índice $only, aunque esté desactivado).
  * Con $dry = true no crea nada: solo informa qué haría.
@@ -68,6 +95,12 @@ function yts_run( $dry = false, $only = null ) {
 		if ( ! $dry ) yts_lock_release();
 	}
 
+	// Si quedaron videos pendientes por el límite de la pasada, se programa una continuación en 2 minutos
+	// (así no hay que esperar a la próxima sincronización, que puede ser en horas).
+	if ( ! $dry && yts_count_pending( $log ) > 0 && ! wp_next_scheduled( 'yts_sync_followup', [ $only ] ) ) {
+		wp_schedule_single_event( time() + 120, 'yts_sync_followup', [ $only ] );
+	}
+
 	update_option( 'yts_last_log', [ 'time' => current_time( 'mysql' ), 'dry' => (bool) $dry, 'rows' => array_slice( $log, 0, 300 ) ], false );
 	return $log;
 }
@@ -92,7 +125,7 @@ function yts_sync_program( $p, $s, $dry = false ) {
 	$since   = strtotime( $s['import_since'] );
 	$entries = array_reverse( $feed['entries'] ); // del más antiguo al más nuevo
 	$created = 0;
-	$max     = max( 1, (int) apply_filters( 'yts_max_imports_per_run', 10 ) ); // límite por pasada (evita agotar el tiempo del servidor)
+	$max     = max( 1, (int) apply_filters( 'yts_max_imports_per_run', (int) $s['max_per_run'] ) ); // límite por pasada (evita agotar el tiempo del servidor)
 
 	foreach ( $entries as $e ) {
 		$video_id  = $e['id'];

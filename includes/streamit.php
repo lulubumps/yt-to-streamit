@@ -45,9 +45,10 @@ function yts_exists( $video_id ) {
 }
 
 function yts_author( $s ) {
-	if ( $s['author_id'] ) return (int) $s['author_id'];
-	$admins = get_users( [ 'role' => 'administrator', 'number' => 1, 'fields' => 'ID' ] );
-	return $admins ? (int) $admins[0] : 1;
+	$ids = [];
+	foreach ( yts_admins() as $u ) $ids[] = (int) $u->ID;
+	if ( ! empty( $s['author_id'] ) && in_array( (int) $s['author_id'], $ids, true ) ) return (int) $s['author_id'];
+	return $ids ? $ids[0] : 1; // automático: el primer administrador
 }
 
 function yts_flush_show_cache( $show_id ) {

@@ -1,9 +1,10 @@
 /*
  * YouTube a Streamit — panel de administración.
- * Sin dependencias. Hace tres cosas:
+ * Sin dependencias. Hace cuatro cosas:
  *   1) Selector de programa con buscador (.yts-combo), alimentado por window.YTS.shows = [{id, title}].
  *   2) Paginación y filtro de tablas (table.yts-paginated). Todas las filas siguen en el formulario aunque estén ocultas.
  *   3) Tabla de programas: agregar, quitar y activar/desactivar filas.
+ *   4) Videos de la playlist: botones Marcar todos / Desmarcar todos.
  */
 (function () {
 	'use strict';
@@ -214,6 +215,15 @@
 			}
 		});
 	}
+
+	/* ---------------- 4) Videos de la playlist: marcar / desmarcar todos ---------------- */
+	document.addEventListener('click', function (e) {
+		var btn = e.target.closest ? e.target.closest('[data-yts-check]') : null;
+		var table = document.getElementById('yts-videos-table');
+		if (!btn || !table) return;
+		var on = btn.getAttribute('data-yts-check') === 'all';
+		each(table.querySelectorAll('input[type=checkbox][name="pick[]"]'), function (c) { if (!c.disabled) c.checked = on; });
+	});
 
 	function start() {
 		each(document.querySelectorAll('.yts-combo'), initCombo);

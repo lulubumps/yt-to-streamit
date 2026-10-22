@@ -135,15 +135,18 @@ function yts_checks( $write = false ) {
 			$add( ( $is404 || $isq ) ? 'warn' : 'fail', "Playlist de «{$name}»", 'No se pudo leer: ' . $feed['error'] . '.' . $extra );
 			continue;
 		}
-		$n = count( $feed['entries'] ); $new = 0; $old = 0; $done = 0;
+		$n = count( $feed['entries'] ); $new = 0; $old = 0; $done = 0; $skipped = 0;
 		foreach ( $feed['entries'] as $e ) {
-			if ( $tables_ok && yts_exists( $e['id'] ) ) $done++;
-			elseif ( $e['published'] < $since ) $old++;
+			if ( ! $tables_ok ) { $new++; continue; }
+			list( $kind ) = yts_classify_video( $p, $s, $e, $since );
+			if ( 'exists' === $kind ) $done++;
+			elseif ( 'old' === $kind ) $old++;
+			elseif ( 'skip' === $kind ) $skipped++;
 			else $new++;
 		}
-		$detail = "YouTube entrega $n video(s) (vía " . $feed['source'] . "): $new por importar, $done ya importado(s), $old publicado(s) antes de la fecha de inicio.";
+		$detail = "YouTube entrega $n video(s) (vía " . $feed['source'] . "): $new por importar, $done ya existente(s) en Streamit, $old anterior(es) a la fecha de inicio" . ( $skipped ? ", $skipped sin seleccionar" : '' ) . '.';
 		if ( ! $n ) $add( 'warn', "Playlist de «{$name}»", 'Se leyó bien pero no trae videos.' );
-		elseif ( 0 === $new && $old > 0 && 0 === $done ) $add( 'warn', "Playlist de «{$name}»", $detail . ' Si esperabas importar alguno, cambia "Importar videos desde" a una fecha anterior.' );
+		elseif ( 0 === $new && $old > 0 && 0 === $done && 0 === $skipped ) $add( 'warn', "Playlist de «{$name}»", $detail . ' Si esperabas importar alguno, cambia "Importar videos desde" a una fecha anterior.' );
 		else $add( 'ok', "Playlist de «{$name}»", $detail );
 
 		if ( $n ) {

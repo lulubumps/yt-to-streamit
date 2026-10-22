@@ -9,10 +9,13 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) exit;
 wp_clear_scheduled_hook( 'yts_sync' );
 wp_clear_scheduled_hook( 'yts_sync_followup' );
 
-foreach ( [ 'yts_settings', 'yts_last_log', 'yts_last_report', 'yts_last_mail_error', 'yts_lock' ] as $option ) {
+foreach ( [ 'yts_settings', 'yts_choices', 'yts_last_log', 'yts_last_report', 'yts_last_mail_error', 'yts_lock' ] as $option ) {
 	delete_option( $option );
 }
 
 // Avisos de "programa llegó al capítulo N" (uno por programa)
 global $wpdb;
 $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( 'yts_notified_' ) . '%' ) );
+
+// Listas de videos en caché (transients)
+$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s", $wpdb->esc_like( '_transient_yts_videos_' ) . '%', $wpdb->esc_like( '_transient_timeout_yts_videos_' ) . '%' ) );

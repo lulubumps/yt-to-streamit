@@ -38,6 +38,7 @@ function yts_handle_save() {
 				'notify_at' => absint( isset( $row['notify_at'] ) ? $row['notify_at'] : 0 ),
 				'season'    => $season,
 				'active'    => empty( $row['active'] ) ? 0 : 1,
+				'mode'      => ( isset( $row['mode'] ) && 'manual' === $row['mode'] ) ? 'manual' : 'auto',
 			];
 		}
 
@@ -75,6 +76,24 @@ function yts_handle_save() {
 		$s['frequency']        = $freq;
 		$s['youtube_api_key']  = $api_key;
 		$back = 'yts-settings';
+
+	} elseif ( 'videos' === $section ) {
+		// Selección de videos de una playlist. Solo cambia las decisiones de ESA playlist.
+		$i = isset( $_POST['program'] ) ? absint( $_POST['program'] ) : -1;
+		if ( ! isset( $s['programs'][ $i ] ) ) yts_back( 'No encontré ese programa. Vuelve a elegirlo.', 'yts-videos' );
+		$playlist = $s['programs'][ $i ]['playlist'];
+
+		$listed  = yts_clean_video_ids( isset( $_POST['listed'] ) ? $_POST['listed'] : [] );
+		$pick    = yts_clean_video_ids( isset( $_POST['pick'] ) ? $_POST['pick'] : [] );
+		$choices = yts_get_choices( $playlist );
+		foreach ( $listed as $id ) $choices[ $id ] = in_array( $id, $pick, true ) ? 1 : 0;
+		yts_set_choices( $playlist, $choices );
+
+		$msg = 'Selección guardada.';
+		if ( isset( $_POST['yts_after'] ) && 'sync' === $_POST['yts_after'] ) {
+			$msg .= ' Sincronización: ' . yts_summary( yts_run( false, $i ) ) . '.';
+		}
+		yts_back( $msg, 'yts-videos', [ 'program' => $i ] );
 
 	} else {
 		yts_back( 'No entendí qué guardar. Recarga la página e inténtalo de nuevo.' );

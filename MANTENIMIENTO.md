@@ -9,6 +9,7 @@ Cómo está armado el plugin y cómo modificarlo sin romperlo.
 | `yt-to-streamit.php` | Arranque: cabecera, versión, carga los demás archivos | Subes de versión |
 | `includes/settings.php` | Lee ajustes (`yts_settings()`), API key, validación de IDs | Agregas un ajuste nuevo |
 | `includes/streamit.php` | **Único lugar que habla con Streamit** (funciones y tablas internas) | Streamit cambia de versión |
+| `includes/videos.php` | **Decide qué hacer con cada video**: ya existe en Streamit, elegido a mano, modo manual/automático, fecha de inicio | Cambias las reglas de qué se importa |
 | `includes/youtube.php` | Lee playlists: API oficial + RSS con reintentos | YouTube cambia algo |
 | `includes/thumbnails.php` | Descarga la miniatura y la convierte a WebP | Cambias calidad o formato |
 | `includes/notifications.php` | Correo al llegar al capítulo N | Cambias el aviso |
@@ -17,6 +18,7 @@ Cómo está armado el plugin y cómo modificarlo sin romperlo.
 | `includes/diagnostics.php` | Comprobaciones de la «Verificación del sistema» | Agregas una comprobación |
 | `includes/admin/menu.php` | Menú, pestañas, encabezado común y carga de CSS/JS | Agregas una sección nueva |
 | `includes/admin/page-programs.php` | **Programas sincronizados** (página principal): tabla, buscador, paginación, importación | Cambias la tabla de programas |
+| `includes/admin/page-videos.php` | **Videos de la playlist**: lista con casillas y estado de cada video | Cambias esa pantalla |
 | `includes/admin/page-settings.php` | **Ajustes**: frecuencia, correo, video, modelo, autor, WebP, API key | Agregas un ajuste |
 | `includes/admin/page-tools.php` | **Herramientas**: acciones manuales y visor de campos | Agregas una herramienta |
 | `includes/admin/page-imported.php` | **Episodios importados** | Cambias esa lista |
@@ -81,6 +83,9 @@ add_filter( 'yts_max_imports_per_run', function () { return 25; } );
 ### Agregar una comprobación a la verificación
 `diagnostics.php` → dentro de `yts_checks()`: `$add( 'ok' | 'warn' | 'fail' | 'info', 'Título', 'Detalle' );`
 
+### Cambiar cómo se reconocen los episodios ya cargados
+`videos.php` → `yts_existing_video_map()`. Lee los campos `_episode_url_link` y `_episode_embed_content` de cada episodio y extrae el ID de YouTube con una expresión regular. Si cargas videos de otra forma, agrega el campo o el patrón ahí. Las decisiones por video se guardan en la opción `yts_choices` (por playlist) y el modo de cada programa en `mode` dentro de `yts_settings`.
+
 ## 5. Si Streamit cambia de versión
 
 Lo único que depende de Streamit está en `includes/streamit.php` y en `yts_import_video()` / `yts_repair()` de `importer.php`.
@@ -104,6 +109,8 @@ Después corre «Verificar + prueba de creación»: si Streamit rechaza el episo
 | `HTTP 404 tras 3 intentos` | El feed RSS de YouTube falla de forma intermitente | Esperar, o configurar la API key |
 | `exceeded your quota` | Cuota diaria de la API agotada | Esperar al reinicio (medianoche, hora del Pacífico) o revisar quién la consume en Google Cloud |
 | `Omitido: … antes de la fecha de inicio` | La fecha es la de publicación del video, no la de agregarlo a la playlist | Ajustar *Importar videos desde* |
+| `Omitido: ya existe en Streamit como «…»` | El video ya está en un episodio (se detecta por su enlace o embed de YouTube, no por el título) | Normal. Si no debería omitirse, revisa ese episodio |
+| Un episodio antiguo no se detecta y se duplica | Tiene el video subido como archivo, no como enlace de YouTube | Usa el modo «Solo los que elija» y deja ese video sin marcar |
 | `Pendiente: se alcanzó el límite…` | Más videos nuevos que el máximo por pasada | Normal; el plugin continúa solo a los 2 minutos (con WP-Cron, cuando haya una visita). También puedes presionar de nuevo **Sincronizar ahora** |
 | `Ya hay una sincronización en curso` | Otra sincronización está corriendo | Esperar unos minutos (un bloqueo de más de 10 min se retoma solo) |
 | Episodios importados que no se ven en el programa | No quedaron enlazados a una temporada | Botón **Reparar enlaces** |

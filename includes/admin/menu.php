@@ -17,6 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 function yts_pages() {
 	return [
 		'yts'          => [ 'Programas sincronizados', 'yts_page_programs' ],
+		'yts-videos'   => [ 'Videos de la playlist', 'yts_page_videos' ],
 		'yts-settings' => [ 'Ajustes', 'yts_page_settings' ],
 		'yts-tools'    => [ 'Herramientas', 'yts_page_tools' ],
 		'yts-imported' => [ 'Episodios importados', 'yts_page_imported' ],
@@ -82,8 +83,10 @@ function yts_admin_footer() {
 }
 
 /** Vuelve a una sección del panel con un mensaje (termina la petición). */
-function yts_back( $msg, $page = 'yts' ) {
+function yts_back( $msg, $page = 'yts', $args = [] ) {
 	if ( ! isset( yts_pages()[ $page ] ) ) $page = 'yts';
-	wp_safe_redirect( add_query_arg( 'yts_msg', rawurlencode( $msg ), admin_url( 'admin.php?page=' . $page ) ) );
+	$url = admin_url( 'admin.php?page=' . $page );
+	if ( $args ) $url = add_query_arg( $args, $url );
+	wp_safe_redirect( add_query_arg( 'yts_msg', rawurlencode( $msg ), $url ) );
 	exit;
 }

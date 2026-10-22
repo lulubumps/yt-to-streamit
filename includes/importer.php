@@ -136,12 +136,10 @@ function yts_sync_program( $p, $s, $dry = false ) {
 
 		$row = [ $label, $video_id, $title, get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $published ) ) ];
 
-		if ( yts_exists( $video_id ) ) {
-			$rows[] = array_merge( $row, [ 'Omitido: ya estaba importado.' ] );
-			continue;
-		}
-		if ( $published < $since ) {
-			$rows[] = array_merge( $row, [ 'Omitido: el video se publicó en YouTube antes de la "fecha de inicio" (' . substr( $s['import_since'], 0, 10 ) . ').' ] );
+		// Qué hacer con el video: importarlo, o por qué se omite (ya existe en Streamit, no seleccionado, fecha de inicio…)
+		list( $kind, $note ) = yts_classify_video( $p, $s, $e, $since );
+		if ( 'import' !== $kind ) {
+			$rows[] = array_merge( $row, [ 'Omitido: ' . $note ] );
 			continue;
 		}
 		if ( $dry ) {

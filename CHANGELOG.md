@@ -2,6 +2,15 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [3.5.0]
+
+- **Detección de episodios ya cargados:** antes de importar, el plugin reconoce los videos de YouTube que ya están en algún episodio de Streamit leyendo su enlace o código embed, aunque el título sea distinto al de YouTube. Esos videos se omiten (y se informa en qué episodio están).
+- **Nueva sección «Videos de la playlist»:** lista los videos de la playlist de un programa con su estado, casilla por video, filtro, paginación, *Marcar/Desmarcar todos*, *Guardar selección* y *Guardar e importar los seleccionados ahora*.
+- **Modo de videos por programa** (columna nueva en *Programas sincronizados*): «Todos los nuevos» o «Solo los que elija».
+- Lo que eliges a mano gana sobre *Importar videos desde*.
+- La verificación del sistema cuenta los videos ya existentes y los sin seleccionar.
+- Las listas de videos se guardan en caché 10 minutos para no gastar cuota de la API al recargar.
+
 ## [3.4.0]
 
 - **Autor de los episodios:** ahora se elige de una lista de los usuarios administradores (ya no hay que escribir su ID). Si el elegido deja de ser administrador, se usa el primer administrador.

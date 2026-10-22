@@ -32,6 +32,15 @@ function yts_row( $i, $row ) {
 		<td><input type="number" min="1" name="programs[<?php echo $i; ?>][season]" value="<?php echo isset( $row['season'] ) && '' !== $row['season'] ? (int) $row['season'] + 1 : ''; ?>" placeholder="última" style="width:80px"></td>
 		<td><input type="number" min="0" name="programs[<?php echo $i; ?>][notify_at]" value="<?php echo esc_attr( $row['notify_at'] ?? 13 ); ?>" style="width:70px"></td>
 		<td><?php echo ( $sel && yts_ready() ) ? (int) yts_total_episodes( $sel ) : '—'; ?></td>
+		<td class="yts-col-videos">
+			<select name="programs[<?php echo $i; ?>][mode]" title="Todos: se importan todos los videos nuevos. Solo los que elija: se importan únicamente los que marques en «Videos de la playlist».">
+				<option value="auto" <?php selected( yts_program_mode( $row ), 'auto' ); ?>>Todos los nuevos</option>
+				<option value="manual" <?php selected( yts_program_mode( $row ), 'manual' ); ?>>Solo los que elija</option>
+			</select>
+			<?php if ( is_numeric( $i ) && ! empty( $row['playlist'] ) ) : ?>
+				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=yts-videos&program=' . (int) $i ) ); ?>">Elegir videos</a>
+			<?php endif; ?>
+		</td>
 		<td class="yts-col-actions">
 			<?php if ( is_numeric( $i ) && ! empty( $row['playlist'] ) ) : ?>
 				<button type="submit" form="yts-actions" name="yts_do" value="run_one:<?php echo (int) $i; ?>" class="button" title="Sincroniza solo este programa ahora (con lo último que guardaste)">Sincronizar</button>
@@ -66,7 +75,7 @@ function yts_page_programs() {
 
 		<table class="widefat striped yts-paginated" id="yts-table" data-per-page="10" data-filter="#yts-list-filter" data-next-index="<?php echo count( $s['programs'] ); ?>">
 			<thead><tr>
-				<th class="yts-col-active">Activo</th><th>Playlist de YouTube</th><th>Programa de Streamit</th><th>N° de temporada</th><th>Avisar en el cap.</th><th>Episodios hoy</th><th></th>
+				<th class="yts-col-active">Activo</th><th>Playlist de YouTube</th><th>Programa de Streamit</th><th>N° de temporada</th><th>Avisar en el cap.</th><th>Episodios hoy</th><th>Videos a importar</th><th></th>
 			</tr></thead>
 			<tbody>
 				<?php foreach ( $s['programs'] as $row ) { echo yts_row( $i++, $row ); } ?>
@@ -78,6 +87,7 @@ function yts_page_programs() {
 		<p class="description">
 			<strong>Programa de Streamit:</strong> escribe para buscar. <strong>Activo:</strong> quita la palomita para dejar de sincronizar un programa sin borrarlo.
 			<strong>Temporada:</strong> vacío = siempre la última (si no hay, se crea «Temporada 1»).
+			<strong>Videos a importar:</strong> «Todos los nuevos» o «Solo los que elija»; con <strong>Elegir videos</strong> ves la playlist y marcas cuáles. Los videos que ya están en Streamit se omiten solos.
 			<strong>Sincronizar</strong> (cada fila) importa solo ese programa, incluso si está desactivado, con lo último que guardaste.
 		</p>
 

@@ -64,6 +64,9 @@ Dependencias entre archivos: `importer` usa `youtube`, `streamit`, `thumbnails` 
 2. `admin/actions.php` → en `yts_handle_action()`, agrega `case 'mi_accion':` con tu lógica y termina con `yts_back( 'Mensaje', $ret );`. El botón vuelve solo a la página desde la que se pulsó.
 3. No necesitas nonce ni permisos nuevos: el despachador ya los exige.
 
+### Usar el selector con buscador en otra pantalla
+Es un `<div class="yts-combo" data-source="mi_lista" data-submit="1">` con un input de texto (`.yts-combo-input`), un input oculto (el valor que se envía) y un `<div class="yts-combo-list" hidden>`. Las opciones salen de `window.YTS.mi_lista = [ { id, title, hint } ]`, que se entrega con `wp_localize_script` en `admin/menu.php`. Con `data-submit="1"` envía el formulario al elegir. Ejemplos: `page-programs.php` (lista `shows`) y `page-videos.php` (lista `programs`).
+
 ### Agregar una sección (pestaña) nueva al panel
 1. Crea `includes/admin/page-mi-seccion.php` con una función `yts_page_mi_seccion()` que abra con `yts_admin_header( 'yts-mi-seccion' );` y cierre con `yts_admin_footer();` (copia `page-tools.php` como base).
 2. `admin/menu.php` → agrégala a `yts_pages()` (slug => [ título, función ]). El menú y las pestañas se arman solos.

@@ -2,6 +2,11 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [3.5.1]
+
+- «Videos de la playlist»: el selector de programa pasa a ser el mismo **selector con buscador** de «Programas sincronizados» (ya no es una lista larga). Busca por nombre o por ID de playlist y, al elegir, abre la lista de videos de inmediato.
+- El selector con buscador (`assets/admin.js`) ahora sirve con cualquier lista mediante `data-source` y puede enviar el formulario al elegir (`data-submit`).
+
 ## [3.5.0]
 
 - **Detección de episodios ya cargados:** antes de importar, el plugin reconoce los videos de YouTube que ya están en algún episodio de Streamit leyendo su enlace o código embed, aunque el título sea distinto al de YouTube. Esos videos se omiten (y se informa en qué episodio están).

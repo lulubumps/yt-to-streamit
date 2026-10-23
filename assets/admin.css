@@ -14,6 +14,7 @@
 .yts-wrap .yts-tools td { vertical-align: middle; }
 
 /* Barra de la tabla de programas */
+.yts-wrap .yts-toolbar .yts-combo { min-width: 300px; }
 .yts-wrap .yts-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
 
 /* Paginación */

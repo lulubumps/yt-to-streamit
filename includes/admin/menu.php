@@ -45,6 +45,13 @@ add_action( 'admin_enqueue_scripts', function () {
 		$shows = [];
 		foreach ( yts_shows() as $sh ) $shows[] = [ 'id' => (int) $sh->ID, 'title' => $sh->post_title ];
 		wp_localize_script( 'yts-admin', 'YTS', [ 'shows' => $shows ] );
+	} elseif ( 'yts-videos' === $page ) {
+		// Programas ya sincronizados, para el selector con buscador de «Videos de la playlist»
+		$programs = [];
+		foreach ( yts_settings()['programs'] as $k => $prog ) {
+			$programs[] = [ 'id' => (int) $k, 'title' => yts_program_label( $prog ), 'hint' => isset( $prog['playlist'] ) ? $prog['playlist'] : '' ];
+		}
+		wp_localize_script( 'yts-admin', 'YTS', [ 'programs' => $programs ] );
 	}
 } );
 

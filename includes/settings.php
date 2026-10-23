@@ -32,6 +32,11 @@ function yts_parse_playlist( $input ) {
 	return preg_replace( '/[^A-Za-z0-9_-]/', '', $input );
 }
 
+/** Nombre para mostrar de un programa sincronizado: su nombre en Streamit o, si falta, el ID de la playlist. */
+function yts_program_label( $p ) {
+	return ! empty( $p['label'] ) ? $p['label'] : ( isset( $p['playlist'] ) ? $p['playlist'] : '' );
+}
+
 /** Usuarios administradores (para elegir el autor de los episodios). Devuelve objetos con ID, display_name y user_login. */
 function yts_admins() {
 	return get_users( [ 'role' => 'administrator', 'orderby' => 'display_name', 'order' => 'ASC', 'fields' => [ 'ID', 'display_name', 'user_login' ] ] );

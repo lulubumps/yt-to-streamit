@@ -38,14 +38,28 @@ function yts_page_videos() {
 		return;
 	}
 
-	// Selector de programa (solo lectura)
-	echo '<form method="get" action="" class="yts-toolbar"><input type="hidden" name="page" value="yts-videos">';
-	echo '<label for="yts-program-pick"><strong>Programa:</strong></label> <select name="program" id="yts-program-pick"><option value="">— elige un programa —</option>';
-	foreach ( $s['programs'] as $k => $prog ) {
-		$name = ! empty( $prog['label'] ) ? $prog['label'] : $prog['playlist'];
-		echo '<option value="' . (int) $k . '"' . ( $k === $i ? ' selected' : '' ) . '>' . esc_html( $name ) . '</option>';
-	}
-	echo '</select> <button class="button">Ver videos</button></form>';
+	// Selector de programa con buscador (el mismo de «Programas sincronizados»; solo lectura)
+	$has_sel   = isset( $s['programs'][ $i ] );
+	$cur_label = $has_sel ? yts_program_label( $s['programs'][ $i ] ) : '';
+	?>
+	<form method="get" action="" class="yts-toolbar">
+		<input type="hidden" name="page" value="yts-videos">
+		<label for="yts-program-pick"><strong>Programa:</strong></label>
+		<div class="yts-combo" data-source="programs" data-submit="1">
+			<input type="text" id="yts-program-pick" class="yts-combo-input" value="<?php echo esc_attr( $cur_label ); ?>" placeholder="Buscar programa sincronizado…" autocomplete="off">
+			<input type="hidden" name="program" value="<?php echo $has_sel ? (int) $i : ''; ?>">
+			<div class="yts-combo-list" hidden></div>
+		</div>
+		<noscript>
+			<select name="program">
+				<?php foreach ( $s['programs'] as $k => $prog ) : ?>
+					<option value="<?php echo (int) $k; ?>" <?php selected( $k, $i ); ?>><?php echo esc_html( yts_program_label( $prog ) ); ?></option>
+				<?php endforeach; ?>
+			</select>
+		</noscript>
+		<button class="button">Ver videos</button>
+	</form>
+	<?php
 
 	if ( ! isset( $s['programs'][ $i ] ) ) {
 		echo '<p class="description">Elige un programa para ver los videos de su playlist. También puedes entrar con el botón <strong>Elegir videos</strong> de cada fila en «Programas sincronizados».</p>';
@@ -54,7 +68,7 @@ function yts_page_videos() {
 	}
 
 	$p       = $s['programs'][ $i ];
-	$name    = ! empty( $p['label'] ) ? $p['label'] : $p['playlist'];
+	$name    = yts_program_label( $p );
 	$mode    = yts_program_mode( $p );
 	$refresh = ! empty( $_GET['refresh'] );
 	$feed    = yts_cached_videos( $p['playlist'], $s, $refresh );

@@ -1,7 +1,7 @@
 /*
  * YouTube a Streamit — panel de administración.
  * Sin dependencias. Hace cuatro cosas:
- *   1) Selector de programa con buscador (.yts-combo), alimentado por window.YTS.shows = [{id, title}].
+ *   1) Selector con buscador (.yts-combo): programas de Streamit y programas sincronizados, alimentado por window.YTS.
  *   2) Paginación y filtro de tablas (table.yts-paginated). Todas las filas siguen en el formulario aunque estén ocultas.
  *   3) Tabla de programas: agregar, quitar y activar/desactivar filas.
  *   4) Videos de la playlist: botones Marcar todos / Desmarcar todos.
@@ -18,20 +18,21 @@
 	}
 
 	/* ---------------- 1) Selector con buscador ---------------- */
-	var shows = (window.YTS && window.YTS.shows) || [];
+	/*
+	 * <div class="yts-combo" data-source="shows|programs" data-submit="1"> con un input de texto, un input oculto (el valor
+	 * que se envía) y la lista. Las opciones salen de window.YTS[data-source] = [{ id, title, hint? }]:
+	 *   shows    → programas de Streamit (Programas sincronizados)
+	 *   programs → programas ya sincronizados (Videos de la playlist)
+	 * Con data-submit="1", al elegir una opción se envía el formulario que lo contiene.
+	 */
 	var MAX_ITEMS = 50;
-
-	function titleOf(id) {
-		for (var i = 0; i < shows.length; i++) {
-			if (String(shows[i].id) === String(id)) return shows[i].title;
-		}
-		return '';
-	}
 
 	function initCombo(box) {
 		if (!box || box.getAttribute('data-ready')) return;
 		box.setAttribute('data-ready', '1');
 
+		var source = box.getAttribute('data-source') || 'shows';
+		var autoSubmit = !!box.getAttribute('data-submit');
 		var input = box.querySelector('.yts-combo-input');
 		var hidden = box.querySelector('input[type=hidden]');
 		var list = box.querySelector('.yts-combo-list');
@@ -39,10 +40,27 @@
 		var active = -1;
 		var typing = false;
 
+		function items() { return (window.YTS && window.YTS[source]) || []; }
+
+		function titleOf(id) {
+			var all = items();
+			for (var i = 0; i < all.length; i++) {
+				if (String(all[i].id) === String(id)) return all[i].title;
+			}
+			return '';
+		}
+
+		function labelOf(it) {
+			return it.title + '  (' + (it.hint != null && it.hint !== '' ? it.hint : '#' + it.id) + ')';
+		}
+
 		function render() {
 			var q = typing ? norm(input.value) : '';
-			var all = shows.filter(function (sh) {
-				return !q || norm(sh.title).indexOf(q) !== -1 || String(sh.id) === q;
+			var all = items().filter(function (it) {
+				if (!q) return true;
+				return norm(it.title).indexOf(q) !== -1 ||
+					(it.hint != null && norm(it.hint).indexOf(q) !== -1) ||
+					(source === 'shows' && String(it.id) === q);
 			});
 			matches = all.slice(0, MAX_ITEMS);
 			active = -1;
@@ -51,14 +69,14 @@
 			if (!matches.length) {
 				var empty = document.createElement('div');
 				empty.className = 'yts-combo-empty';
-				empty.textContent = shows.length ? 'Sin resultados' : 'No hay programas en Streamit todavía';
+				empty.textContent = items().length ? 'Sin resultados' : 'No hay programas todavía';
 				list.appendChild(empty);
 			}
-			matches.forEach(function (sh) {
+			matches.forEach(function (it) {
 				var d = document.createElement('div');
-				d.className = 'yts-combo-item' + (String(sh.id) === hidden.value ? ' is-selected' : '');
-				d.textContent = sh.title + '  (#' + sh.id + ')';
-				d.addEventListener('mousedown', function (e) { e.preventDefault(); pick(sh); });
+				d.className = 'yts-combo-item' + (String(it.id) === hidden.value ? ' is-selected' : '');
+				d.textContent = labelOf(it);
+				d.addEventListener('mousedown', function (e) { e.preventDefault(); pick(it); });
 				list.appendChild(d);
 			});
 			if (all.length > MAX_ITEMS) {
@@ -70,33 +88,38 @@
 			list.hidden = false;
 		}
 
-		function pick(sh) {
-			hidden.value = sh.id;
-			input.value = sh.title;
+		function pick(it) {
+			var changed = String(hidden.value) !== String(it.id);
+			hidden.value = it.id;
+			input.value = it.title;
 			typing = false;
 			list.hidden = true;
+			if (autoSubmit && changed) {
+				var form = box.closest('form');
+				if (form) form.submit();
+			}
 		}
 
 		function move(dir) {
-			var items = list.querySelectorAll('.yts-combo-item');
-			if (!items.length) return;
-			active = (active + dir + items.length) % items.length;
-			each(items, function (el, i) { el.classList.toggle('is-active', i === active); });
-			if (items[active].scrollIntoView) items[active].scrollIntoView({ block: 'nearest' });
+			var els = list.querySelectorAll('.yts-combo-item');
+			if (!els.length) return;
+			active = (active + dir + els.length) % els.length;
+			each(els, function (el, i) { el.classList.toggle('is-active', i === active); });
+			if (els[active].scrollIntoView) els[active].scrollIntoView({ block: 'nearest' });
 		}
 
 		input.addEventListener('focus', function () { typing = false; input.select(); render(); });
 		input.addEventListener('input', function () { typing = true; render(); });
 		input.addEventListener('blur', function () {
 			list.hidden = true;
-			input.value = titleOf(hidden.value); // si no eligió nada nuevo, vuelve al programa elegido
+			input.value = titleOf(hidden.value); // si no eligió nada nuevo, vuelve al elegido
 		});
 		input.addEventListener('keydown', function (e) {
 			if (e.key === 'ArrowDown') { e.preventDefault(); if (list.hidden) render(); move(1); }
 			else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
 			else if (e.key === 'Enter') {
 				if (!list.hidden) {
-					e.preventDefault(); // no enviar el formulario
+					e.preventDefault(); // no enviar el formulario con Enter mientras la lista está abierta
 					if (active >= 0 && matches[active]) pick(matches[active]);
 					else if (matches.length === 1) pick(matches[0]);
 				}

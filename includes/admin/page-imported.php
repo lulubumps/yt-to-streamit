@@ -13,6 +13,7 @@ function yts_page_imported() {
 	if ( ! current_user_can( 'manage_options' ) ) return;
 
 	yts_admin_header( 'yts-imported' );
+	echo '<h2>' . esc_html__( 'Imported episodes', 'yt-to-streamit' ) . '</h2>';
 	yts_render_imported();
 	yts_admin_footer();
 }
@@ -28,13 +29,12 @@ function yts_render_imported() {
 		        (SELECT meta_value FROM {$wpdb->streamit_episodemeta} WHERE streamit_episode_id = e.ID AND meta_key = '_episode_number' LIMIT 1) AS num
 		   FROM {$wpdb->streamit_episode} e
 		   JOIN {$wpdb->streamit_episodemeta} v ON v.streamit_episode_id = e.ID AND v.meta_key = '_yts_video_id'
-		  WHERE v.meta_value <> '__prueba__'
+		  WHERE v.meta_value NOT IN ( '__test__', '__prueba__' )
 		  ORDER BY e.post_date ASC, e.ID ASC"
 	);
 
-	
 	if ( ! $rows ) {
-		echo '<p class="description">Todavía no hay episodios importados por este plugin.</p>';
+		echo '<p class="description">' . esc_html__( 'No episodes have been imported by this plugin yet.', 'yt-to-streamit' ) . '</p>';
 		return;
 	}
 
@@ -45,13 +45,25 @@ function yts_render_imported() {
 	$names = [];
 	foreach ( $s['programs'] as $p ) $names[ (int) $p['show'] ] = ! empty( $p['label'] ) ? $p['label'] : '#' . (int) $p['show'];
 
-	echo '<p class="description">' . count( $rows ) . ' episodio(s) importado(s) por este plugin, ordenados por programa, temporada y capítulo.</p>';
+	echo '<p class="description">';
+	/* translators: %d: number of episodes */
+	echo esc_html( sprintf( __( '%d episode(s) imported by this plugin, sorted by program, season and episode.', 'yt-to-streamit' ), count( $rows ) ) );
+	echo '</p>';
+
+	$l = [
+		'season'    => esc_attr__( 'Season', 'yt-to-streamit' ),
+		'episode'   => esc_attr__( 'Ep.', 'yt-to-streamit' ),
+		'title'     => esc_attr__( 'Title', 'yt-to-streamit' ),
+		'published' => esc_attr__( 'Published on YouTube', 'yt-to-streamit' ),
+		'status'    => esc_attr__( 'Status', 'yt-to-streamit' ),
+		'actions'   => esc_attr__( 'Actions', 'yt-to-streamit' ),
+	];
 
 	$first = true;
 	foreach ( $groups as $show_id => $eps ) {
 		if ( ! isset( $names[ $show_id ] ) ) {
 			$title = $show_id ? $wpdb->get_var( $wpdb->prepare( "SELECT post_title FROM {$wpdb->streamit_tvshow} WHERE ID = %d", $show_id ) ) : '';
-			$names[ $show_id ] = $title ? $title : 'Sin programa';
+			$names[ $show_id ] = $title ? $title : __( 'No program', 'yt-to-streamit' );
 		}
 
 		// Temporada de cada episodio según el programa
@@ -73,25 +85,33 @@ function yts_render_imported() {
 			return (int) $a->ID <=> (int) $b->ID;
 		} );
 
-		echo '<details style="margin:10px 0"' . ( $first ? ' open' : '' ) . '><summary style="cursor:pointer;font-size:14px;padding:6px 0"><strong>' . esc_html( $names[ $show_id ] ) . '</strong> — ' . count( $eps ) . ' episodio(s)';
-		if ( $unlinked ) echo ' · <span style="color:#b32d2e">⚠️ ' . (int) $unlinked . ' sin enlazar (usa «Reparar enlaces»)</span>';
+		echo '<details class="yts-group"' . ( $first ? ' open' : '' ) . '><summary><strong>' . esc_html( $names[ $show_id ] ) . '</strong> — ';
+		/* translators: %d: number of episodes */
+		echo esc_html( sprintf( __( '%d episode(s)', 'yt-to-streamit' ), count( $eps ) ) );
+		if ( $unlinked ) {
+			/* translators: %d: number of episodes that are not linked to a season */
+			echo ' · <span class="yts-warn">⚠️ ' . esc_html( sprintf( __( '%d not linked (use “Repair links”)', 'yt-to-streamit' ), $unlinked ) ) . '</span>';
+		}
 		echo '</summary>';
 		$first = false;
 
-		echo '<table class="widefat striped yts-paginated" data-per-page="20"><thead><tr><th>Temp.</th><th>Cap.</th><th>Título</th><th>Publicado en YouTube</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+		echo '<table class="widefat striped yts-paginated yts-stack" data-per-page="20"><thead><tr><th>' . esc_html( $l['season'] ) . '</th><th>' . esc_html( $l['episode'] ) . '</th><th>' . esc_html( $l['title'] ) . '</th><th>' . esc_html( $l['published'] ) . '</th><th>' . esc_html( $l['status'] ) . '</th><th>' . esc_html( $l['actions'] ) . '</th></tr></thead><tbody>';
 		foreach ( array_slice( $eps, 0, 500 ) as $e ) {
-			$status = 'publish' === $e->post_status ? 'Publicado' : ( 'draft' === $e->post_status ? 'Borrador' : $e->post_status );
+			$status = 'publish' === $e->post_status ? __( 'Published', 'yt-to-streamit' ) : ( 'draft' === $e->post_status ? __( 'Draft', 'yt-to-streamit' ) : $e->post_status );
 			echo '<tr>';
-			echo '<td>' . ( $e->season ? (int) $e->season : '⚠️' ) . '</td>';
-			echo '<td>' . ( '' !== (string) $e->num ? (int) $e->num : '—' ) . '</td>';
-			echo '<td>' . esc_html( $e->post_title ) . '</td>';
-			echo '<td>' . esc_html( $e->post_date ) . '</td>';
-			echo '<td>' . esc_html( $status ) . '</td>';
-			echo '<td><a href="' . esc_url( admin_url( 'admin.php?page=streamit-edit-tvshow-episode&id=' . (int) $e->ID ) ) . '">Editar</a> · <a href="' . esc_url( 'https://www.youtube.com/watch?v=' . $e->video_id ) . '" target="_blank" rel="noopener">YouTube</a></td>';
+			echo '<td data-label="' . $l['season'] . '">' . ( $e->season ? (int) $e->season : '⚠️' ) . '</td>';
+			echo '<td data-label="' . $l['episode'] . '">' . ( '' !== (string) $e->num ? (int) $e->num : '—' ) . '</td>';
+			echo '<td data-label="' . $l['title'] . '">' . esc_html( $e->post_title ) . '</td>';
+			echo '<td data-label="' . $l['published'] . '">' . esc_html( $e->post_date ) . '</td>';
+			echo '<td data-label="' . $l['status'] . '">' . esc_html( $status ) . '</td>';
+			echo '<td data-label="' . $l['actions'] . '"><a href="' . esc_url( admin_url( 'admin.php?page=streamit-edit-tvshow-episode&id=' . (int) $e->ID ) ) . '">' . esc_html__( 'Edit', 'yt-to-streamit' ) . '</a> · <a href="' . esc_url( 'https://www.youtube.com/watch?v=' . $e->video_id ) . '" target="_blank" rel="noopener">YouTube</a></td>';
 			echo '</tr>';
 		}
 		echo '</tbody></table>';
-		if ( count( $eps ) > 500 ) echo '<p class="description">Mostrando los primeros 500 de ' . count( $eps ) . '.</p>';
+		if ( count( $eps ) > 500 ) {
+			/* translators: %d: total number of episodes */
+			echo '<p class="description">' . esc_html( sprintf( __( 'Showing the first 500 of %d.', 'yt-to-streamit' ), count( $eps ) ) ) . '</p>';
+		}
 		echo '</details>';
 	}
 }

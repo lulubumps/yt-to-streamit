@@ -27,26 +27,36 @@ function yts_lock_release() {
 	delete_option( 'yts_lock' );
 }
 
+/**
+ * Las filas del registro de una sincronización son [ programa, video_id, título, fecha, texto, código ].
+ * El texto está traducido; el código (created, pending, skipped, dry, error, info) no, y es lo que se usa para contar.
+ */
+function yts_count_code( $log, $code ) {
+	$n = 0;
+	foreach ( $log as $r ) if ( isset( $r[5] ) && $code === $r[5] ) $n++;
+	return $n;
+}
+
 /** Cuántos episodios se crearon según el registro de una sincronización. */
 function yts_count_created( $log ) {
-	$n = 0;
-	foreach ( $log as $r ) if ( isset( $r[4] ) && 0 === strpos( $r[4], 'Creado' ) ) $n++;
-	return $n;
+	return yts_count_code( $log, 'created' );
 }
 
 /** Cuántos videos quedaron pendientes por el límite de la pasada. */
 function yts_count_pending( $log ) {
-	$n = 0;
-	foreach ( $log as $r ) if ( isset( $r[4] ) && 0 === strpos( $r[4], 'Pendiente' ) ) $n++;
-	return $n;
+	return yts_count_code( $log, 'pending' );
 }
 
 /** Texto resumen: «3 episodio(s) creado(s), 2 pendiente(s) (…)». */
 function yts_summary( $log ) {
-	$txt = yts_count_created( $log ) . ' episodio(s) creado(s)';
-	$p   = yts_count_pending( $log );
-	if ( $p ) $txt .= ", $p pendiente(s): se importarán solos en unos minutos (también puedes volver a sincronizar)";
-	return $txt;
+	$created = yts_count_created( $log );
+	$pending = yts_count_pending( $log );
+	if ( $pending ) {
+		/* translators: 1: number of episodes created, 2: number of videos left pending */
+		return sprintf( __( '%1$d episode(s) created, %2$d pending: they will be imported automatically in a few minutes (you can also sync again)', 'yt-to-streamit' ), $created, $pending );
+	}
+	/* translators: %d: number of episodes created */
+	return sprintf( __( '%d episode(s) created', 'yt-to-streamit' ), $created );
 }
 
 /** Continuación automática tras una pasada con videos pendientes (evento único de WP-Cron). */
@@ -63,7 +73,7 @@ function yts_run( $dry = false, $only = null ) {
 	$log = [];
 
 	if ( ! $dry && ! yts_lock_acquire() ) {
-		$log[] = [ '—', '', '', '', 'Ya hay una sincronización en curso. Intenta de nuevo en unos minutos.' ];
+		$log[] = [ '—', '', '', '', __( 'A sync is already running. Try again in a few minutes.', 'yt-to-streamit' ), 'info' ];
 		update_option( 'yts_last_log', [ 'time' => current_time( 'mysql' ), 'dry' => false, 'rows' => $log ], false );
 		return $log;
 	}
@@ -72,11 +82,12 @@ function yts_run( $dry = false, $only = null ) {
 		if ( function_exists( 'set_time_limit' ) ) @set_time_limit( 300 );
 
 		if ( ! yts_ready() ) {
-			$log[] = [ '—', '', '', '', 'ERROR: el plugin Streamit no está activo o no tiene las funciones esperadas.' ];
+			/* translators: %s: error message */
+			$log[] = [ '—', '', '', '', sprintf( __( 'ERROR: %s', 'yt-to-streamit' ), __( 'the Streamit plugin is not active or does not have the expected functions.', 'yt-to-streamit' ) ), 'error' ];
 		} else {
 			$s = yts_settings();
 			if ( ! $s['programs'] ) {
-				$log[] = [ '—', '', '', '', 'No hay programas configurados. Agrega uno y guarda.' ];
+				$log[] = [ '—', '', '', '', __( 'There are no programs configured. Add one and save.', 'yt-to-streamit' ), 'info' ];
 			}
 			foreach ( $s['programs'] as $i => $p ) {
 				if ( null !== $only && (int) $only !== (int) $i ) continue;
@@ -84,7 +95,7 @@ function yts_run( $dry = false, $only = null ) {
 				$label = ! empty( $p['label'] ) ? $p['label'] : $p['playlist'];
 				// Desactivado: se omite en la sincronización automática y en "Sincronizar ahora" (solo corre si lo pides a mano)
 				if ( null === $only && isset( $p['active'] ) && ! $p['active'] ) {
-					$log[] = [ $label, '', '', '', 'Programa desactivado: no se sincroniza.' ];
+					$log[] = [ $label, '', '', '', __( 'Program disabled: it is not synced.', 'yt-to-streamit' ), 'info' ];
 					continue;
 				}
 				$log = array_merge( $log, yts_sync_program( $p, $s, $dry ) );
@@ -112,13 +123,15 @@ function yts_sync_program( $p, $s, $dry = false ) {
 	$feed = yts_fetch_videos( $p['playlist'], $s );
 	if ( $feed['error'] ) {
 		$hint = '';
-		if ( false !== stripos( $feed['error'], 'quota' ) ) $hint .= ' La cuota diaria de la API de YouTube está agotada (se reinicia a medianoche, hora del Pacífico de EE. UU.).';
-		if ( false !== strpos( $feed['error'], 'HTTP 404' ) ) $hint .= ' El feed RSS de YouTube falla de forma intermitente; se reintenta solo en la próxima pasada.';
-		$rows[] = [ $label, '', '', '', 'ERROR al leer la playlist (' . $feed['error'] . ').' . $hint ];
+		if ( false !== stripos( $feed['error'], 'quota' ) ) $hint .= ' ' . __( 'The daily YouTube API quota is exhausted (it resets at midnight, US Pacific time).', 'yt-to-streamit' );
+		if ( false !== strpos( $feed['error'], 'HTTP 404' ) ) $hint .= ' ' . __( 'The YouTube RSS feed fails intermittently; it will be retried on the next run.', 'yt-to-streamit' );
+		/* translators: %s: error detail */
+		$rows[] = [ $label, '', '', '', sprintf( __( 'ERROR reading the playlist (%s).', 'yt-to-streamit' ), $feed['error'] ) . $hint, 'error' ];
 		return $rows;
 	}
 	if ( ! $feed['entries'] ) {
-		$rows[] = [ $label, '', '', '', 'La playlist no trae videos (' . $feed['source'] . ').' ];
+		/* translators: %s: source used to read the playlist (API or RSS) */
+		$rows[] = [ $label, '', '', '', sprintf( __( 'The playlist has no videos (%s).', 'yt-to-streamit' ), $feed['source'] ), 'info' ];
 		return $rows;
 	}
 
@@ -139,22 +152,30 @@ function yts_sync_program( $p, $s, $dry = false ) {
 		// Qué hacer con el video: importarlo, o por qué se omite (ya existe en Streamit, no seleccionado, fecha de inicio…)
 		list( $kind, $note ) = yts_classify_video( $p, $s, $e, $since );
 		if ( 'import' !== $kind ) {
-			$rows[] = array_merge( $row, [ 'Omitido: ' . $note ] );
+			/* translators: %s: reason why the video is skipped */
+			$rows[] = array_merge( $row, [ sprintf( __( 'Skipped: %s', 'yt-to-streamit' ), $note ), 'skipped' ] );
 			continue;
 		}
 		if ( $dry ) {
-			$rows[] = array_merge( $row, [ 'Se importaría.' ] );
+			$rows[] = array_merge( $row, [ __( 'Would be imported.', 'yt-to-streamit' ), 'dry' ] );
 			continue;
 		}
 
 		if ( $created >= $max ) {
-			$rows[] = array_merge( $row, [ "Pendiente: se alcanzó el límite de $max importaciones por pasada; se importará en la próxima." ] );
+			/* translators: %d: maximum number of imports per run */
+			$rows[] = array_merge( $row, [ sprintf( __( 'Pending: the limit of %d imports per run was reached; it will be imported on the next one.', 'yt-to-streamit' ), $max ), 'pending' ] );
 			continue;
 		}
 
 		$r = yts_import_video( $p, $s, compact( 'video_id', 'title', 'published', 'desc' ) );
 		if ( ! is_wp_error( $r ) ) $created++;
-		$rows[] = array_merge( $row, [ is_wp_error( $r ) ? 'ERROR: ' . $r->get_error_message() : "Creado (episodio #$r)." ] );
+		if ( is_wp_error( $r ) ) {
+			/* translators: %s: error message */
+			$rows[] = array_merge( $row, [ sprintf( __( 'ERROR: %s', 'yt-to-streamit' ), $r->get_error_message() ), 'error' ] );
+		} else {
+			/* translators: %d: ID of the episode that was created */
+			$rows[] = array_merge( $row, [ sprintf( __( 'Created (episode #%d).', 'yt-to-streamit' ), $r ), 'created' ] );
+		}
 	}
 	return $rows;
 }
@@ -165,7 +186,7 @@ function yts_import_video( $p, $s, $v ) {
 	// --- Temporada destino (si no hay ninguna, crea "Temporada 1") ---
 	$seasons = yts_seasons( $show_id );
 	if ( ! $seasons ) {
-		$seasons[] = [ 'name' => 'Temporada 1', 'season_year' => gmdate( 'Y' ), 'season_description' => '', 'episodes' => [] ];
+		$seasons[] = [ 'name' => __( 'Season 1', 'yt-to-streamit' ), 'season_year' => gmdate( 'Y' ), 'season_description' => '', 'episodes' => [] ];
 	}
 	$idx = ( isset( $p['season'] ) && '' !== $p['season'] && isset( $seasons[ (int) $p['season'] ] ) )
 		? (int) $p['season']
@@ -184,9 +205,10 @@ function yts_import_video( $p, $s, $v ) {
 	] );
 
 	if ( is_wp_error( $episode_id ) || ! $episode_id ) {
-		$why = is_wp_error( $episode_id ) ? $episode_id->get_error_message() : 'Streamit no devolvió un ID';
-		error_log( '[yts] No se pudo crear el episodio: ' . $why );
-		return new WP_Error( 'yts_create', 'No se pudo crear el episodio: ' . $why );
+		$why = is_wp_error( $episode_id ) ? $episode_id->get_error_message() : __( 'Streamit did not return an ID', 'yt-to-streamit' );
+		error_log( '[yts] Could not create the episode: ' . $why );
+		/* translators: %s: reason */
+		return new WP_Error( 'yts_create', sprintf( __( 'Could not create the episode: %s', 'yt-to-streamit' ), $why ) );
 	}
 
 	// --- Meta: primero lo copiado del episodio modelo, luego lo propio ---
@@ -233,7 +255,7 @@ function yts_import_video( $p, $s, $v ) {
 }
 
 function yts_repair() {
-	if ( ! yts_ready() ) return [ 'total' => 0, 'msg' => 'Streamit no está activo.' ];
+	if ( ! yts_ready() ) return [ 'total' => 0, 'msg' => __( 'Streamit is not active.', 'yt-to-streamit' ) ];
 	$s     = yts_settings();
 	$total = 0;
 	$lines = [];
@@ -242,11 +264,15 @@ function yts_repair() {
 		$show_id = (int) $p['show'];
 		$name    = ! empty( $p['label'] ) ? $p['label'] : "#$show_id";
 		$missing = yts_unlinked_ids( $show_id );
-		if ( ! $missing ) { $lines[] = "«{$name}»: nada que reparar."; continue; }
+		if ( ! $missing ) {
+			/* translators: %s: program name */
+			$lines[] = sprintf( __( '“%s”: nothing to repair.', 'yt-to-streamit' ), $name );
+			continue;
+		}
 
 		$seasons = yts_seasons( $show_id );
 		if ( ! $seasons ) {
-			$seasons[] = [ 'name' => 'Temporada 1', 'season_year' => gmdate( 'Y' ), 'season_description' => '', 'episodes' => [] ];
+			$seasons[] = [ 'name' => __( 'Season 1', 'yt-to-streamit' ), 'season_year' => gmdate( 'Y' ), 'season_description' => '', 'episodes' => [] ];
 		}
 		$idx = ( isset( $p['season'] ) && '' !== $p['season'] && isset( $seasons[ (int) $p['season'] ] ) ) ? (int) $p['season'] : count( $seasons ) - 1;
 		$eps = ! empty( $seasons[ $idx ]['episodes'] ) ? array_map( 'intval', (array) $seasons[ $idx ]['episodes'] ) : [];
@@ -261,7 +287,9 @@ function yts_repair() {
 		yts_flush_show_cache( $show_id );
 
 		$total   += count( $missing );
-		$lines[]  = "«{$name}»: " . count( $missing ) . ' episodio(s) enlazado(s) a la temporada ' . ( $idx + 1 ) . '.';
+		/* translators: 1: program name, 2: number of episodes, 3: season number */
+		$lines[]  = sprintf( __( '“%1$s”: %2$d episode(s) linked to season %3$d.', 'yt-to-streamit' ), $name, count( $missing ), $idx + 1 );
 	}
-	return [ 'total' => $total, 'msg' => 'Reparación lista. ' . implode( ' ', $lines ) ];
+	/* translators: %s: summary per program */
+	return [ 'total' => $total, 'msg' => sprintf( __( 'Repair finished. %s', 'yt-to-streamit' ), implode( ' ', $lines ) ) ];
 }

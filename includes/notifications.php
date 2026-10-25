@@ -28,11 +28,14 @@ function yts_check_milestone( $p, $s ) {
 	$count = yts_total_episodes( $show_id );
 	if ( $count < $target ) return;
 
-	$label = ! empty( $p['label'] ) ? $p['label'] : "Programa #$show_id";
+	/* translators: %d: ID of the program in Streamit */
+	$label = ! empty( $p['label'] ) ? $p['label'] : sprintf( __( 'Program #%d', 'yt-to-streamit' ), $show_id );
 	$sent  = wp_mail(
 		yts_mail_to( $s ),
-		"El programa \"$label\" llegó al capítulo $target",
-		"El programa \"$label\" ya tiene $count episodios en el sitio."
+		/* translators: 1: program name, 2: episode number reached */
+		sprintf( __( 'The program "%1$s" reached episode %2$d', 'yt-to-streamit' ), $label, $target ),
+		/* translators: 1: program name, 2: number of episodes */
+		sprintf( __( 'The program "%1$s" now has %2$d episodes on the site.', 'yt-to-streamit' ), $label, $count )
 	);
 
 	// Solo se marca como avisado si el correo realmente salió; si falla, reintenta en la próxima pasada
@@ -40,6 +43,6 @@ function yts_check_milestone( $p, $s ) {
 		update_option( $flag, 1 );
 		delete_option( 'yts_last_mail_error' );
 	} else {
-		error_log( "[yts] No se pudo enviar el aviso del programa $label" );
+		error_log( "[yts] Could not send the notice for program $label" );
 	}
 }

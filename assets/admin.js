@@ -1,15 +1,25 @@
 /*
  * YouTube a Streamit — panel de administración.
- * Sin dependencias. Hace cuatro cosas:
+ * Sin dependencias. Hace cinco cosas:
  *   1) Selector con buscador (.yts-combo): programas de Streamit y programas sincronizados, alimentado por window.YTS.
  *   2) Paginación y filtro de tablas (table.yts-paginated). Todas las filas siguen en el formulario aunque estén ocultas.
  *   3) Tabla de programas: agregar, quitar y activar/desactivar filas.
  *   4) Videos de la playlist: botones Marcar todos / Desmarcar todos.
+ *   5) Tablas como tarjetas (table.yts-stack → .yts-card-mode) según el ancho del contenedor.
  */
 (function () {
 	'use strict';
 
 	var each = function (list, fn) { Array.prototype.forEach.call(list, fn); };
+
+	// Textos traducidos que entrega PHP en window.YTS.i18n (con el inglés como respaldo)
+	var I18N = (window.YTS && window.YTS.i18n) || {};
+	function t(key, fallback) { return I18N[key] || fallback; }
+	// Reemplaza %1$s, %2$s… (o %s en orden) por los argumentos
+	function fmt(str) {
+		var args = Array.prototype.slice.call(arguments, 1), next = 0;
+		return String(str).replace(/%(?:(\d+)\$)?s/g, function (m, n) { return args[n ? n - 1 : next++]; });
+	}
 
 	// Minúsculas y sin acentos, para que "camara" encuentre "Cámara"
 	function norm(s) {
@@ -69,20 +79,21 @@
 			if (!matches.length) {
 				var empty = document.createElement('div');
 				empty.className = 'yts-combo-empty';
-				empty.textContent = items().length ? 'Sin resultados' : 'No hay programas todavía';
+				empty.textContent = items().length ? t('noResults', 'No results') : t('noPrograms', 'There are no programs yet');
 				list.appendChild(empty);
 			}
 			matches.forEach(function (it) {
 				var d = document.createElement('div');
 				d.className = 'yts-combo-item' + (String(it.id) === hidden.value ? ' is-selected' : '');
 				d.textContent = labelOf(it);
-				d.addEventListener('mousedown', function (e) { e.preventDefault(); pick(it); });
+				d.addEventListener('mousedown', function (e) { e.preventDefault(); }); // ratón: no quitar el foco del campo
+				d.addEventListener('click', function () { pick(it); });                // ratón y toque
 				list.appendChild(d);
 			});
 			if (all.length > MAX_ITEMS) {
 				var note = document.createElement('div');
 				note.className = 'yts-combo-note';
-				note.textContent = 'Mostrando ' + MAX_ITEMS + ' de ' + all.length + '. Sigue escribiendo para filtrar.';
+				note.textContent = fmt(t('showing', 'Showing %1$s of %2$s. Keep typing to narrow it down.'), MAX_ITEMS, all.length);
 				list.appendChild(note);
 			}
 			list.hidden = false;
@@ -111,8 +122,12 @@
 		input.addEventListener('focus', function () { typing = false; input.select(); render(); });
 		input.addEventListener('input', function () { typing = true; render(); });
 		input.addEventListener('blur', function () {
-			list.hidden = true;
-			input.value = titleOf(hidden.value); // si no eligió nada nuevo, vuelve al elegido
+			// Pequeña espera: en el celular el toque sobre una opción llega después del blur
+			setTimeout(function () {
+				if (document.activeElement === input) return;
+				list.hidden = true;
+				input.value = titleOf(hidden.value); // si no eligió nada nuevo, vuelve al elegido
+			}, 200);
 		});
 		input.addEventListener('keydown', function (e) {
 			if (e.key === 'ArrowDown') { e.preventDefault(); if (list.hidden) render(); move(1); }
@@ -167,20 +182,20 @@
 
 			var info = document.createElement('span');
 			info.className = 'displaying-num';
-			info.textContent = total + (total === 1 ? ' elemento' : ' elementos');
+			info.textContent = total === 1 ? t('oneItem', '1 item') : fmt(t('nItems', '%s items'), total);
 			pager.appendChild(info);
 
 			if (pages > 1) {
 				var nav = document.createElement('span');
 				nav.className = 'yts-pager-links';
-				nav.appendChild(button('«', 'Primera página', page > 1, function () { page = 1; refresh(); }));
-				nav.appendChild(button('‹', 'Anterior', page > 1, function () { page--; refresh(); }));
+				nav.appendChild(button('«', t('firstPage', 'First page'), page > 1, function () { page = 1; refresh(); }));
+				nav.appendChild(button('‹', t('prevPage', 'Previous'), page > 1, function () { page--; refresh(); }));
 				var label = document.createElement('span');
 				label.className = 'yts-pager-label';
-				label.textContent = 'Página ' + page + ' de ' + pages;
+				label.textContent = fmt(t('pageOf', 'Page %1$s of %2$s'), page, pages);
 				nav.appendChild(label);
-				nav.appendChild(button('›', 'Siguiente', page < pages, function () { page++; refresh(); }));
-				nav.appendChild(button('»', 'Última página', page < pages, function () { page = pages; refresh(); }));
+				nav.appendChild(button('›', t('nextPage', 'Next'), page < pages, function () { page++; refresh(); }));
+				nav.appendChild(button('»', t('lastPage', 'Last page'), page < pages, function () { page = pages; refresh(); }));
 				pager.appendChild(nav);
 			}
 		}
@@ -248,11 +263,33 @@
 		each(table.querySelectorAll('input[type=checkbox][name="pick[]"]'), function (c) { if (!c.disabled) c.checked = on; });
 	});
 
+	/* ---------------- 5) Tablas como tarjetas según el ancho disponible ---------------- */
+	// Mide el ancho del contenedor (no de la pantalla): así cuenta el menú lateral de WordPress y sirve también en tablets.
+	function initCards() {
+		var tables = document.querySelectorAll('table.yts-stack');
+		function update() {
+			each(tables, function (tb) {
+				var below = parseInt(tb.getAttribute('data-cards-below') || '720', 10);
+				var holder = tb.parentNode;
+				var w = holder ? holder.clientWidth : window.innerWidth;
+				tb.classList.toggle('yts-card-mode', w > 0 && w < below);
+			});
+		}
+		update();
+		window.addEventListener('resize', update);
+		window.addEventListener('orientationchange', update);
+		if (window.ResizeObserver) {
+			var wrap = document.querySelector('.yts-wrap');
+			if (wrap) new ResizeObserver(update).observe(wrap);
+		}
+	}
+
 	function start() {
 		each(document.querySelectorAll('.yts-combo'), initCombo);
 		each(document.querySelectorAll('table.yts-paginated'), initPager);
 		var programs = document.getElementById('yts-table');
 		if (programs) initPrograms(programs);
+		initCards();
 	}
 
 	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);

@@ -16,11 +16,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 function yts_frequencies() {
 	return [
-		'yts_30min'  => 'Cada 30 minutos',
-		'hourly'     => 'Cada hora',
-		'yts_6h'     => 'Cada 6 horas',
-		'twicedaily' => 'Cada 12 horas',
-		'daily'      => 'Cada 24 horas',
+		'yts_30min'  => __( 'Every 30 minutes', 'yt-to-streamit' ),
+		'hourly'     => __( 'Every hour', 'yt-to-streamit' ),
+		'yts_6h'     => __( 'Every 6 hours', 'yt-to-streamit' ),
+		'twicedaily' => __( 'Every 12 hours', 'yt-to-streamit' ),
+		'daily'      => __( 'Every 24 hours', 'yt-to-streamit' ),
 	];
 }
 
@@ -31,8 +31,8 @@ function yts_frequency() {
 }
 
 add_filter( 'cron_schedules', function ( $s ) {
-	$s['yts_30min'] = [ 'interval' => 1800,  'display' => 'Cada 30 minutos' ];
-	$s['yts_6h']    = [ 'interval' => 21600, 'display' => 'Cada 6 horas' ];
+	$s['yts_30min'] = [ 'interval' => 1800,  'display' => __( 'Every 30 minutes', 'yt-to-streamit' ) ];
+	$s['yts_6h']    = [ 'interval' => 21600, 'display' => __( 'Every 6 hours', 'yt-to-streamit' ) ];
 	return $s;
 } );
 

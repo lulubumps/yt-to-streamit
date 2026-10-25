@@ -21,60 +21,60 @@ function yts_page_settings() {
 		<input type="hidden" name="yts_section" value="settings">
 		<?php wp_nonce_field( 'yts_save' ); ?>
 
-		<h2>Sincronización automática</h2>
+		<h2><?php esc_html_e( 'Automatic sync', 'yt-to-streamit' ); ?></h2>
 		<table class="form-table" role="presentation">
-			<tr><th>Frecuencia</th><td>
+			<tr><th><?php esc_html_e( 'Frequency', 'yt-to-streamit' ); ?></th><td>
 				<select name="frequency">
 					<?php foreach ( yts_frequencies() as $key => $label ) : ?>
 						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( yts_frequency(), $key ); ?>><?php echo esc_html( $label ); ?></option>
 					<?php endforeach; ?>
 				</select>
-				<p class="description">Cada cuánto revisa YouTube sola. Para importar al instante usa «Sincronizar ahora». WP-Cron solo corre cuando alguien visita el sitio.</p></td></tr>
-			<tr><th>Máximo por pasada</th><td><input type="number" min="1" max="100" name="max_per_run" value="<?php echo (int) $s['max_per_run']; ?>" style="width:80px"> episodios por programa en cada sincronización
-				<p class="description">Límite para no agotar el tiempo del servidor al convertir miniaturas. Si quedan videos pendientes, el plugin continúa solo a los pocos minutos.</p></td></tr>
+				<p class="description"><?php esc_html_e( 'How often it checks YouTube on its own. To import right away use “Sync now”. WP-Cron only runs when someone visits the site.', 'yt-to-streamit' ); ?></p></td></tr>
+			<tr><th><?php esc_html_e( 'Maximum per run', 'yt-to-streamit' ); ?></th><td><input type="number" min="1" max="100" class="yts-num" name="max_per_run" value="<?php echo (int) $s['max_per_run']; ?>"> <?php esc_html_e( 'episodes per program in each sync', 'yt-to-streamit' ); ?>
+				<p class="description"><?php esc_html_e( 'A limit to avoid exhausting the server time when converting thumbnails. If videos are left pending, the plugin continues on its own a few minutes later.', 'yt-to-streamit' ); ?></p></td></tr>
 		</table>
 
-		<h2>Avisos por correo</h2>
+		<h2><?php esc_html_e( 'Email notices', 'yt-to-streamit' ); ?></h2>
 		<table class="form-table" role="presentation">
-			<tr><th>Correo de aviso</th><td><input type="email" name="notify_email" value="<?php echo esc_attr( $s['notify_email'] ); ?>" class="regular-text" placeholder="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>">
-				<p class="description">Recibe el aviso cuando un programa llega al capítulo configurado. Vacío = correo del administrador.</p></td></tr>
+			<tr><th><?php esc_html_e( 'Notification email', 'yt-to-streamit' ); ?></th><td><input type="email" name="notify_email" value="<?php echo esc_attr( $s['notify_email'] ); ?>" class="regular-text" placeholder="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>">
+				<p class="description"><?php esc_html_e( 'You receive the notice when a program reaches the configured episode. Empty = administrator email.', 'yt-to-streamit' ); ?></p></td></tr>
 		</table>
 
-		<h2>Episodios</h2>
+		<h2><?php esc_html_e( 'Episodes', 'yt-to-streamit' ); ?></h2>
 		<table class="form-table" role="presentation">
-			<tr><th>Cómo se carga el video</th><td>
+			<tr><th><?php esc_html_e( 'How the video is loaded', 'yt-to-streamit' ); ?></th><td>
 				<select name="video_method">
-					<option value="episode_embed" <?php selected( $s['video_method'], 'episode_embed' ); ?>>Código embed (iframe de YouTube)</option>
-					<option value="episode_url" <?php selected( $s['video_method'], 'episode_url' ); ?>>URL del video</option>
+					<option value="episode_embed" <?php selected( $s['video_method'], 'episode_embed' ); ?>><?php esc_html_e( 'Embed code (YouTube iframe)', 'yt-to-streamit' ); ?></option>
+					<option value="episode_url" <?php selected( $s['video_method'], 'episode_url' ); ?>><?php esc_html_e( 'Video URL', 'yt-to-streamit' ); ?></option>
 				</select>
-				<p class="description">Usa la misma opción con la que ya cargas tus episodios hoy.</p></td></tr>
-			<tr><th>ID de un episodio modelo</th><td><input type="number" name="template_episode" value="<?php echo (int) $s['template_episode'] ? (int) $s['template_episode'] : ''; ?>" style="width:120px">
-				<p class="description">Opcional, pero recomendado: de este episodio se copian los demás campos de Streamit (calificación, visibilidad, etc.).</p></td></tr>
-			<tr><th>Autor de los episodios</th><td>
+				<p class="description"><?php esc_html_e( 'Use the same option you already use to load your episodes today.', 'yt-to-streamit' ); ?></p></td></tr>
+			<tr><th><?php esc_html_e( 'Model episode ID', 'yt-to-streamit' ); ?></th><td><input type="number" class="yts-num yts-num-wide" name="template_episode" value="<?php echo (int) $s['template_episode'] ? (int) $s['template_episode'] : ''; ?>">
+				<p class="description"><?php esc_html_e( 'Optional but recommended: the other Streamit fields (rating, visibility, etc.) are copied from this episode.', 'yt-to-streamit' ); ?></p></td></tr>
+			<tr><th><?php esc_html_e( 'Author of the episodes', 'yt-to-streamit' ); ?></th><td>
 				<select name="author_id">
-					<option value="0">Automático (primer administrador)</option>
+					<option value="0"><?php esc_html_e( 'Automatic (first administrator)', 'yt-to-streamit' ); ?></option>
 					<?php foreach ( yts_admins() as $u ) : ?>
 						<option value="<?php echo (int) $u->ID; ?>" <?php selected( (int) $s['author_id'], (int) $u->ID ); ?>><?php echo esc_html( $u->display_name . ' (' . $u->user_login . ')' ); ?></option>
 					<?php endforeach; ?>
 				</select>
-				<p class="description">Usuario administrador al que se asignan los episodios importados.</p></td></tr>
-			<tr><th>Miniaturas en WebP</th><td><label><input type="checkbox" name="thumb_webp" value="1" <?php checked( $s['thumb_webp'] ); ?>> Convertir las miniaturas de YouTube a WebP (más livianas)</label>
-				<p class="description">Si el servidor no soporta WebP, se guarda el JPG original y queda un aviso en el registro de errores.</p></td></tr>
+				<p class="description"><?php esc_html_e( 'Administrator user the imported episodes are assigned to.', 'yt-to-streamit' ); ?></p></td></tr>
+			<tr><th><?php esc_html_e( 'WebP thumbnails', 'yt-to-streamit' ); ?></th><td><label><input type="checkbox" name="thumb_webp" value="1" <?php checked( $s['thumb_webp'] ); ?>> <?php esc_html_e( 'Convert YouTube thumbnails to WebP (lighter)', 'yt-to-streamit' ); ?></label>
+				<p class="description"><?php esc_html_e( 'If the server does not support WebP, the original JPG is saved and a notice is left in the error log.', 'yt-to-streamit' ); ?></p></td></tr>
 		</table>
 
 		<h2>YouTube</h2>
 		<table class="form-table" role="presentation">
-			<tr><th>API key (opcional)</th><td>
+			<tr><th><?php esc_html_e( 'API key (optional)', 'yt-to-streamit' ); ?></th><td>
 				<?php if ( defined( 'YTS_API_KEY' ) && YTS_API_KEY ) : ?>
-					<em>Definida en wp-config.php (constante YTS_API_KEY).</em>
+					<em><?php esc_html_e( 'Defined in wp-config.php (YTS_API_KEY constant).', 'yt-to-streamit' ); ?></em>
 				<?php else : ?>
-					<input type="password" name="youtube_api_key" value="" class="regular-text" autocomplete="off" placeholder="<?php echo $s['youtube_api_key'] ? '•••••••• (guardada; escribe otra para reemplazarla)' : 'Pega aquí tu API key'; ?>">
-					<?php if ( $s['youtube_api_key'] ) : ?><label>&nbsp;<input type="checkbox" name="clear_api_key" value="1"> Borrar la clave guardada</label><?php endif; ?>
+					<input type="password" name="youtube_api_key" value="" class="regular-text" autocomplete="off" placeholder="<?php echo $s['youtube_api_key'] ? esc_attr__( '•••••••• (saved; type another one to replace it)', 'yt-to-streamit' ) : esc_attr__( 'Paste your API key here', 'yt-to-streamit' ); ?>">
+					<?php if ( $s['youtube_api_key'] ) : ?><label>&nbsp;<input type="checkbox" name="clear_api_key" value="1"> <?php esc_html_e( 'Delete the saved key', 'yt-to-streamit' ); ?></label><?php endif; ?>
 				<?php endif; ?>
-				<p class="description">Recomendada: la API de YouTube es más confiable que el feed RSS, que a veces responde 404. Es gratis (Google Cloud → YouTube Data API v3). También puedes definirla en <code>wp-config.php</code> con <code>define( 'YTS_API_KEY', 'tu-clave' );</code> para que no quede en la base de datos.</p></td></tr>
+				<p class="description"><?php echo wp_kses( __( 'Recommended: the YouTube API is more reliable than the RSS feed, which sometimes answers 404. It is free (Google Cloud → YouTube Data API v3). You can also define it in <code>wp-config.php</code> with <code>define( \'YTS_API_KEY\', \'your-key\' );</code> so it is not stored in the database.', 'yt-to-streamit' ), [ 'code' => [] ] ); ?></p></td></tr>
 		</table>
 
-		<?php submit_button( 'Guardar cambios' ); ?>
+		<?php submit_button( __( 'Save changes', 'yt-to-streamit' ) ); ?>
 	</form>
 	<?php
 	yts_admin_footer();

@@ -2,6 +2,24 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [3.6.0]
+
+### Idiomas
+- El plugin queda disponible en **inglés, español y portugués**. El idioma base de los textos es el inglés; hay traducciones para es_ES, es_CL, es_CO, es_MX, es_AR, pt_BR y pt_PT (carpeta `languages/`).
+- La interfaz sigue el idioma de WordPress (idioma del sitio o idioma de cada usuario en su perfil).
+- Nombre y descripción del plugin traducibles; el nombre base pasa a ser «YouTube to Streamit».
+- Nuevo `bin/update-translations.sh` para regenerar el `.pot`, fusionar los `.po` y compilar los `.mo`.
+- Los textos del JavaScript se entregan ya traducidos desde PHP.
+- El conteo de episodios «creados» y «pendientes» ya no depende del texto del registro (usa códigos internos).
+- Los nombres de temporada que crea el plugin («Temporada 1» / «Season 1») siguen el idioma del sitio.
+
+### Diseño adaptable (celular y tablet)
+- Las tablas pasan a **tarjetas** cuando el ancho disponible es chico (se mide el contenedor, así cuenta el menú lateral de WordPress), con el título de cada dato sobre su valor.
+- Pestañas en una sola fila que se desliza; barra de guardado fija abajo; campos de 16 px (el iPhone no hace zoom) y botones de al menos 40 px.
+- El selector con buscador funciona al **tocar** (se elige con `click` y el cierre espera 200 ms).
+- El botón «Cerrar» de informes y registros va en su propia fila.
+- Nueva prueba en un Chromium real: `node tests/mobile-test.js` (100 comprobaciones a 12 anchos, de 320 a 1440 px).
+
 ## [3.5.1]
 
 - «Videos de la playlist»: el selector de programa pasa a ser el mismo **selector con buscador** de «Programas sincronizados» (ya no es una lista larga). Busca por nombre o por ID de playlist y, al elegir, abre la lista de videos de inmediato.

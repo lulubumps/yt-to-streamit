@@ -58,7 +58,7 @@ function yts_flush_show_cache( $show_id ) {
 			if ( method_exists( $t, 'invalidate_meta_cache' ) ) $t->invalidate_meta_cache();
 		}
 	} catch ( \Throwable $e ) {
-		error_log( '[yts] No se pudo limpiar la caché del programa: ' . $e->getMessage() );
+		error_log( '[yts] Could not clear the program cache: ' . $e->getMessage() );
 	}
 }
 

@@ -17,7 +17,7 @@ function yts_sideload( $video_id, $title, $s = [] ) {
 	$want_webp = ! isset( $s['thumb_webp'] ) || $s['thumb_webp'];
 	$can_webp  = $want_webp && wp_image_editor_supports( [ 'mime_type' => 'image/webp' ] );
 	if ( $want_webp && ! $can_webp ) {
-		error_log( '[yts] Este servidor no soporta WebP (GD/Imagick); se usará JPG.' );
+		error_log( '[yts] This server does not support WebP (GD/Imagick); JPG will be used.' );
 	}
 
 	foreach ( [ 'maxresdefault', 'hqdefault' ] as $q ) {

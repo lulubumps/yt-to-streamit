@@ -16,17 +16,17 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 function yts_pages() {
 	return [
-		'yts'          => [ 'Programas sincronizados', 'yts_page_programs' ],
-		'yts-videos'   => [ 'Videos de la playlist', 'yts_page_videos' ],
-		'yts-settings' => [ 'Ajustes', 'yts_page_settings' ],
-		'yts-tools'    => [ 'Herramientas', 'yts_page_tools' ],
-		'yts-imported' => [ 'Episodios importados', 'yts_page_imported' ],
-		'yts-verify'   => [ 'Verificación del sistema', 'yts_page_verify' ],
+		'yts'          => [ __( 'Synced programs', 'yt-to-streamit' ), 'yts_page_programs' ],
+		'yts-videos'   => [ __( 'Playlist videos', 'yt-to-streamit' ), 'yts_page_videos' ],
+		'yts-settings' => [ __( 'Settings', 'yt-to-streamit' ), 'yts_page_settings' ],
+		'yts-tools'    => [ __( 'Tools', 'yt-to-streamit' ), 'yts_page_tools' ],
+		'yts-imported' => [ __( 'Imported episodes', 'yt-to-streamit' ), 'yts_page_imported' ],
+		'yts-verify'   => [ __( 'System check', 'yt-to-streamit' ), 'yts_page_verify' ],
 	];
 }
 
 add_action( 'admin_menu', function () {
-	add_menu_page( 'YouTube a Streamit', 'YouTube a Streamit', 'manage_options', 'yts', 'yts_page_programs', 'dashicons-video-alt3', 58 );
+	add_menu_page( __( 'YouTube to Streamit', 'yt-to-streamit' ), __( 'YouTube to Streamit', 'yt-to-streamit' ), 'manage_options', 'yts', 'yts_page_programs', 'dashicons-video-alt3', 58 );
 	foreach ( yts_pages() as $slug => $page ) {
 		add_submenu_page( 'yts', $page[0], $page[0], 'manage_options', $slug, $page[1] );
 	}
@@ -40,20 +40,40 @@ add_action( 'admin_enqueue_scripts', function () {
 	wp_enqueue_style( 'yts-admin', YTS_URL . 'assets/admin.css', [], YTS_VERSION );
 	wp_enqueue_script( 'yts-admin', YTS_URL . 'assets/admin.js', [], YTS_VERSION, true );
 
-	// Lista de programas de Streamit para el selector con buscador
+	// Datos para el JavaScript: textos traducidos y las listas del selector con buscador
+	$data = [ 'i18n' => yts_js_strings() ];
 	if ( 'yts' === $page ) {
-		$shows = [];
-		foreach ( yts_shows() as $sh ) $shows[] = [ 'id' => (int) $sh->ID, 'title' => $sh->post_title ];
-		wp_localize_script( 'yts-admin', 'YTS', [ 'shows' => $shows ] );
+		// Programas de Streamit (selector de «Programas sincronizados»)
+		$data['shows'] = [];
+		foreach ( yts_shows() as $sh ) $data['shows'][] = [ 'id' => (int) $sh->ID, 'title' => $sh->post_title ];
 	} elseif ( 'yts-videos' === $page ) {
-		// Programas ya sincronizados, para el selector con buscador de «Videos de la playlist»
-		$programs = [];
+		// Programas ya sincronizados (selector de «Videos de la playlist»)
+		$data['programs'] = [];
 		foreach ( yts_settings()['programs'] as $k => $prog ) {
-			$programs[] = [ 'id' => (int) $k, 'title' => yts_program_label( $prog ), 'hint' => isset( $prog['playlist'] ) ? $prog['playlist'] : '' ];
+			$data['programs'][] = [ 'id' => (int) $k, 'title' => yts_program_label( $prog ), 'hint' => isset( $prog['playlist'] ) ? $prog['playlist'] : '' ];
 		}
-		wp_localize_script( 'yts-admin', 'YTS', [ 'programs' => $programs ] );
 	}
+	wp_localize_script( 'yts-admin', 'YTS', $data );
 } );
+
+/** Textos que usa assets/admin.js (ya traducidos). Las claves deben coincidir con las de `t( clave, … )` en el JavaScript. */
+function yts_js_strings() {
+	return [
+		'noResults'  => __( 'No results', 'yt-to-streamit' ),
+		'noPrograms' => __( 'There are no programs yet', 'yt-to-streamit' ),
+		/* translators: 1: number of results shown, 2: total number of results */
+		'showing'    => __( 'Showing %1$s of %2$s. Keep typing to narrow it down.', 'yt-to-streamit' ),
+		'oneItem'    => __( '1 item', 'yt-to-streamit' ),
+		/* translators: %s: number of items */
+		'nItems'     => __( '%s items', 'yt-to-streamit' ),
+		'firstPage'  => __( 'First page', 'yt-to-streamit' ),
+		'prevPage'   => __( 'Previous', 'yt-to-streamit' ),
+		'nextPage'   => __( 'Next', 'yt-to-streamit' ),
+		'lastPage'   => __( 'Last page', 'yt-to-streamit' ),
+		/* translators: 1: current page, 2: total pages */
+		'pageOf'     => __( 'Page %1$s of %2$s', 'yt-to-streamit' ),
+	];
+}
 
 /** Formulario único de acciones: los botones de cada página lo usan con form="yts-actions" (ver actions.php). */
 function yts_actions_form( $current ) {
@@ -71,10 +91,13 @@ function yts_admin_header( $current ) {
 	$msg = isset( $_GET['yts_msg'] ) ? sanitize_text_field( wp_unslash( $_GET['yts_msg'] ) ) : '';
 	$err = get_option( 'yts_last_mail_error' );
 
-	echo '<div class="wrap yts-wrap"><h1>YouTube a Streamit</h1>';
-	if ( ! yts_ready() ) echo '<div class="notice notice-error"><p><strong>El plugin Streamit no está activo</strong> (o su versión no tiene las funciones esperadas). Este plugin necesita Streamit 1.3.x.</p></div>';
+	echo '<div class="wrap yts-wrap"><h1>' . esc_html__( 'YouTube to Streamit', 'yt-to-streamit' ) . '</h1>';
+	if ( ! yts_ready() ) echo '<div class="notice notice-error"><p>' . wp_kses( __( '<strong>The Streamit plugin is not active</strong> (or its version does not have the expected functions). This plugin needs Streamit 1.3.x.', 'yt-to-streamit' ), [ 'strong' => [] ] ) . '</p></div>';
 	if ( $msg ) echo '<div class="notice notice-info is-dismissible"><p>' . esc_html( $msg ) . '</p></div>';
-	if ( $err ) echo '<div class="notice notice-error"><p><strong>Último error de correo:</strong> ' . esc_html( $err ) . '</p></div>';
+	if ( $err ) {
+		/* translators: %s: error message */
+		echo '<div class="notice notice-error"><p>' . wp_kses( sprintf( __( '<strong>Last email error:</strong> %s', 'yt-to-streamit' ), esc_html( $err ) ), [ 'strong' => [] ] ) . '</p></div>';
+	}
 
 	echo '<nav class="nav-tab-wrapper">';
 	foreach ( yts_pages() as $slug => $page ) {

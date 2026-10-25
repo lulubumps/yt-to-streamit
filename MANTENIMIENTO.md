@@ -26,10 +26,14 @@ Cómo está armado el plugin y cómo modificarlo sin romperlo.
 | `includes/admin/components.php` | Piezas compartidas: botón Cerrar, informe, registro | Cambias el informe o el registro |
 | `includes/admin/actions.php` | Guarda por secciones y atiende los botones | Agregas un botón o un ajuste |
 | `assets/admin.js` | Selector con buscador, paginación y filtro, agregar/quitar filas | Cambias el comportamiento del panel |
-| `assets/admin.css` | Estilos del panel | Cambias el diseño |
+| `assets/admin.css` | Estilos del panel y diseño adaptable (tarjetas en pantallas chicas) | Cambias el diseño |
+| `languages/` | Traducciones: `.pot` (plantilla), `.po` (editables) y `.mo` (los que lee WordPress) | Traduces o cambias textos |
+| `bin/update-translations.sh` | Regenera el `.pot`, actualiza los `.po` y compila los `.mo` | Cambiaste textos en el código |
+| `includes/translation-strings.php` | Textos de la cabecera del plugin, solo para las herramientas de traducción (no se carga) | Cambias el nombre o la descripción del plugin |
 | `uninstall.php` | Limpieza al borrar el plugin | Agregas opciones nuevas |
 | `tests/smoke-test.php` | Prueba rápida de la lógica PHP, sin WordPress | Agregas lógica nueva |
 | `tests/panel-test.js` | Prueba del JavaScript del panel (opcional, usa jsdom) | Cambias `assets/admin.js` |
+| `tests/mobile-test.js` + `tests/wp-admin-mock.css` | Prueba del diseño adaptable en un Chromium real (opcional) | Cambias `assets/admin.css` o el HTML de una página |
 
 Dependencias entre archivos: `importer` usa `youtube`, `streamit`, `thumbnails` y `notifications`; el panel (`admin-*`, `diagnostics`) usa al resto. Los archivos del panel solo se cargan en el escritorio de WordPress; el cron carga solo el núcleo.
 
@@ -44,7 +48,7 @@ Dependencias entre archivos: `importer` usa `youtube`, `streamit`, `thumbnails` 
 
 1. Edita el archivo que corresponde (tabla de arriba).
 2. Revisa la sintaxis: `for f in $(find . -name '*.php'); do php -l "$f"; done`
-3. Corre `php tests/smoke-test.php`. Debe terminar en `TODO OK`. Si agregaste lógica, agrega su comprobación al final del archivo de pruebas. Si tocaste `assets/admin.js`, corre también `node tests/panel-test.js` (ver README).
+3. Corre `php tests/smoke-test.php`. Debe terminar en `TODO OK`. Si agregaste lógica, agrega su comprobación al final del archivo de pruebas. Si tocaste `assets/admin.js`, corre también `node tests/panel-test.js`; si tocaste el CSS o el HTML de una página, `node tests/mobile-test.js` (ver README).
 4. En el entorno de pruebas: **Ajustes → YouTube a Streamit → Verificar + prueba de creación**. Todo en ✅ (o ⚠️ explicables).
 5. Sincroniza con el estado en *Borrador* y revisa un episodio completo en Streamit.
 6. Sube la versión en **dos** lugares: la cabecera de `yt-to-streamit.php` (`Version:`) y la constante `YTS_VERSION`. Anota el cambio en `CHANGELOG.md`.
@@ -63,6 +67,20 @@ Dependencias entre archivos: `importer` usa `youtube`, `streamit`, `thumbnails` 
 1. En la página donde va (`admin/page-*.php`) → `<button type="submit" form="yts-actions" name="yts_do" value="mi_accion" class="button">Texto</button>`
 2. `admin/actions.php` → en `yts_handle_action()`, agrega `case 'mi_accion':` con tu lógica y termina con `yts_back( 'Mensaje', $ret );`. El botón vuelve solo a la página desde la que se pulsó.
 3. No necesitas nonce ni permisos nuevos: el despachador ya los exige.
+
+### Agregar o cambiar un texto de la interfaz (idiomas)
+El idioma base es el **inglés**: todo texto visible se escribe en inglés dentro de `__( 'Text', 'yt-to-streamit' )` (o `esc_html__`, `esc_attr__`, `esc_html_e`…), nunca en español suelto en el código (la prueba `smoke-test.php` lo revisa). Si el texto lleva datos, usa `sprintf` con marcadores numerados y un comentario para el traductor:
+```php
+/* translators: 1: program name, 2: number of episodes */
+sprintf( __( '“%1$s” has %2$d episodes', 'yt-to-streamit' ), $name, $n );
+```
+Luego corre `bin/update-translations.sh` y traduce lo nuevo en `languages/yt-to-streamit-es_*.po` y `-pt_*.po` (con Poedit o un editor de texto); vuelve a correr el script para compilar los `.mo`. Los códigos internos (por ejemplo `created`, `pending`) no se traducen: el texto es para leer y el código para decidir.
+
+### Traducir el plugin a otro idioma
+Copia `languages/yt-to-streamit.pot` como `languages/yt-to-streamit-xx_YY.po` (por ejemplo `fr_FR`), traduce, corre `bin/update-translations.sh` (genera el `.mo`) y agrega ese idioma a la lista de `README`. La interfaz usa el idioma del sitio o el del usuario (Usuarios → Perfil → Idioma). Los textos del JavaScript viven en `yts_js_strings()` (`admin/menu.php`) y se entregan ya traducidos.
+
+### Diseño adaptable: cómo funcionan las tarjetas
+Una tabla con la clase `yts-stack` se convierte en tarjetas cuando el ancho de su contenedor baja de `data-cards-below` (píxeles; 720 por defecto, 1180 la de programas). `assets/admin.js` pone la clase `yts-card-mode` y `assets/admin.css` la dibuja: oculta el encabezado y muestra el título de cada celda desde su `data-label`. Para una tabla nueva: clase `yts-stack`, un `data-label` en cada `<td>` (con texto traducido y escapado con `esc_attr`), y si una celda lleva varios elementos, envuélvelos en `<div class="yts-cell-multi">`. Celdas con casilla: clase `yts-col-active` o `yts-col-pick` (título a la izquierda, casilla a la derecha). Calibra el umbral con `node tests/mobile-test.js`: mide desbordes de 320 a 1440 px.
 
 ### Usar el selector con buscador en otra pantalla
 Es un `<div class="yts-combo" data-source="mi_lista" data-submit="1">` con un input de texto (`.yts-combo-input`), un input oculto (el valor que se envía) y un `<div class="yts-combo-list" hidden>`. Las opciones salen de `window.YTS.mi_lista = [ { id, title, hint } ]`, que se entrega con `wp_localize_script` en `admin/menu.php`. Con `data-submit="1"` envía el formulario al elegir. Ejemplos: `page-programs.php` (lista `shows`) y `page-videos.php` (lista `programs`).
@@ -123,7 +141,7 @@ Después corre «Verificar + prueba de creación»: si Streamit rechaza el episo
 
 Desde la carpeta que contiene `yt-to-streamit/`:
 ```bash
-zip -r yt-to-streamit-3.3.0.zip yt-to-streamit -x 'yt-to-streamit/tests/*' 'yt-to-streamit/.gitignore' 'yt-to-streamit/.git/*'
+zip -r yt-to-streamit-3.6.0.zip yt-to-streamit -x 'yt-to-streamit/tests/*' 'yt-to-streamit/.gitignore' 'yt-to-streamit/.git/*'
 ```
 La carpeta dentro del ZIP debe llamarse `yt-to-streamit`. Súbelo como *Release* en GitHub; el ZIP automático de GitHub trae otro nombre de carpeta y no sirve para instalar directamente.
 

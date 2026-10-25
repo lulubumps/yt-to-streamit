@@ -86,22 +86,28 @@ function yts_classify_video( $p, $s, $e, $since = null ) {
 	if ( null === $since ) $since = strtotime( $s['import_since'] );
 	$id = $e['id'];
 
-	if ( yts_exists( $id ) ) return [ 'exists', 'ya estaba importado.', null ];
+	if ( yts_exists( $id ) ) return [ 'exists', __( 'already imported.', 'yt-to-streamit' ), null ];
 
 	$ep = yts_existing_episode( $id );
-	if ( $ep ) return [ 'exists', 'ya existe en Streamit como «' . $ep['title'] . '» (#' . $ep['id'] . ').', $ep ];
+	if ( $ep ) {
+		/* translators: 1: title of the existing episode, 2: its ID */
+		return [ 'exists', sprintf( __( 'it already exists in Streamit as “%1$s” (#%2$d).', 'yt-to-streamit' ), $ep['title'], $ep['id'] ), $ep ];
+	}
 
 	$choice = yts_video_choice( $p, $id );
 	if ( null !== $choice ) {
-		return $choice ? [ 'import', 'seleccionado: se importará.', null ] : [ 'skip', 'marcado como «no importar».', null ];
+		return $choice
+			? [ 'import', __( 'selected: it will be imported.', 'yt-to-streamit' ), null ]
+			: [ 'skip', __( 'marked as “do not import”.', 'yt-to-streamit' ), null ];
 	}
 
-	if ( 'manual' === yts_program_mode( $p ) ) return [ 'skip', 'modo manual: no lo seleccionaste.', null ];
+	if ( 'manual' === yts_program_mode( $p ) ) return [ 'skip', __( 'manual mode: you did not select it.', 'yt-to-streamit' ), null ];
 
 	if ( $e['published'] < $since ) {
-		return [ 'old', 'el video se publicó en YouTube antes de la "fecha de inicio" (' . substr( $s['import_since'], 0, 10 ) . ').', null ];
+		/* translators: %s: start date (YYYY-MM-DD) */
+		return [ 'old', sprintf( __( 'the video was published on YouTube before the “start date” (%s).', 'yt-to-streamit' ), substr( $s['import_since'], 0, 10 ) ), null ];
 	}
-	return [ 'import', 'se importará.', null ];
+	return [ 'import', __( 'it will be imported.', 'yt-to-streamit' ), null ];
 }
 
 /** Limpia una lista de IDs de video recibida de un formulario: solo IDs válidos, sin repetidos. */

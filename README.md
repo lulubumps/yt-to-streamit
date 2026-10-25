@@ -1,88 +1,97 @@
-# YouTube a Streamit
+# YouTube to Streamit
 
-Plugin de WordPress que **importa automáticamente los videos de tus playlists de YouTube como episodios de [Streamit](https://iqonic.design/)**, los deja dentro de su programa y temporada, y te **avisa por correo** cuando un programa llega al capítulo que definas (por ejemplo, el 13).
+**English** · [Español](README.es.md) · [Português (Brasil)](README.pt-BR.md)
 
-> Proyecto independiente. **No está afiliado ni respaldado por Iqonic ni por Streamit.** Streamit es un producto comercial de sus autores; este repositorio no incluye su código.
+WordPress plugin that **automatically imports the videos of your YouTube playlists as episodes of [Streamit](https://iqonic.design/)**, puts them inside their program and season, and **emails you** when a program reaches the episode number you choose (for example, 13).
 
-## Qué hace
+> Independent project. **It is not affiliated with or endorsed by Iqonic or Streamit.** Streamit is a commercial product of its authors; this repository does not include its code.
 
-- Un programa de Streamit = una playlist de YouTube. Cada video nuevo se crea como episodio, con título, descripción y miniatura (convertida a WebP si el servidor puede).
-- Activa o desactiva programas con una palomita, o sincroniza uno solo a mano.
-- Lee YouTube por su **API oficial** (recomendado) o por el **feed RSS** como respaldo, con reintentos.
-- Menú propio **YouTube a Streamit** con seis secciones: *Programas sincronizados*, *Videos de la playlist*, *Ajustes*, *Herramientas*, *Episodios importados* y *Verificación del sistema*.
-- **Elige qué videos importar** (video por video) y **detecta los episodios que ya tenías cargados**, aunque tengan otro título que en YouTube.
-- Selector de programa **con buscador** y lista de programas **paginada** (pensado para muchos programas).
-- Herramienta para **reparar** episodios que no quedaron enlazados a su programa.
+## Features
 
-## Requisitos
+- One Streamit program = one YouTube playlist. Every new video becomes an episode, with title, description and thumbnail (converted to WebP when the server can).
+- Own menu **YouTube to Streamit** with six sections: *Synced programs*, *Playlist videos*, *Settings*, *Tools*, *Imported episodes* and *System check*.
+- Program picker **with search** and **paginated** lists (built for many programs).
+- **Choose which videos to import**, one by one, and **detect episodes you already had** — even if their title differs from YouTube's.
+- Turn programs on/off with a checkbox, or sync a single one by hand.
+- Reads YouTube through its **official API** (recommended) or the **RSS feed** as a fallback, with retries.
+- **Works on phones and tablets**: tables become cards on small screens.
+- Available in **English, Spanish and Portuguese**.
+- A tool to **repair** episodes that were not linked to their program.
 
-- WordPress 5.8 o superior y PHP 7.4 o superior.
-- Plugin **Streamit 1.3.x** activo (probado con la 1.3.9).
+## Requirements
 
-## Instalación
+- WordPress 5.8+ and PHP 7.4+.
+- **Streamit 1.3.x** plugin active (tested with 1.3.9).
 
-1. Descarga el ZIP `yt-to-streamit-x.y.z.zip` (sección *Releases*).
-2. En WordPress: **Plugins → Añadir nuevo → Subir plugin** y activa «YouTube a Streamit».
-3. Abre **YouTube a Streamit** en el menú lateral de WordPress.
+## Installation
 
-## Configuración rápida
+1. Download `yt-to-streamit-x.y.z.zip` (*Releases* section).
+2. In WordPress: **Plugins → Add New → Upload Plugin** and activate “YouTube to Streamit”.
+3. Open **YouTube to Streamit** in the WordPress side menu.
 
-1. **Ajustes:** elige cómo cargas el video hoy (código embed o URL, igual que tus episodios actuales), tu correo de aviso y la frecuencia. Guarda.
-2. **Programas sincronizados → + Agregar programa:** busca y elige el programa de Streamit, pega la URL o el ID de su playlist y define el capítulo en que quieres el aviso.
-3. En la misma página, define **Importar videos desde** (evita traer todo el historial) y **Estado al importar**. Empieza en *Borrador*. **Guardar cambios**.
-4. **Verificación del sistema → Verificar + prueba de creación:** todo debería salir en verde.
-5. Presiona **Sincronizar ahora**, revisa un episodio en Streamit y, cuando se vea bien, cambia a *Publicado*.
+## Quick setup
 
-La sincronización automática corre **cada 12 horas** por defecto; puedes cambiarla en *Frecuencia de sincronización* (30 min, 1 h, 6 h, 12 h o 24 h). Usa WP-Cron, que solo se dispara cuando alguien visita el sitio. Para importar al instante, usa **Sincronizar ahora**.
+1. **Settings:** choose how you load videos today (embed code or URL, the same as your current episodes), your notification email and the frequency (every 12 hours by default). Save.
+2. **Synced programs → + Add program:** search and choose the Streamit program, paste its playlist URL or ID and set the episode that should trigger the notice.
+3. On the same page set **Import videos from** (avoids importing the whole history) and **Status when importing**. Start with *Draft*. **Save changes**.
+4. **System check → Check + creation test:** everything should be green.
+5. Press **Sync now**, review an episode in Streamit and, when it looks right, switch to *Published*.
 
-## Si ya tienes episodios cargados
+Automatic sync runs **every 12 hours** by default (you can change it: 30 min, 1 h, 6 h, 12 h or 24 h). It uses WP-Cron, which only fires when someone visits the site. To import right away use **Sync now**.
 
-Antes de sincronizar por primera vez, el plugin necesita saber qué videos ya están en tu sitio para no duplicarlos:
+## If you already have episodes loaded
 
-- **Detección automática:** el plugin lee el enlace o el código embed de cada episodio de Streamit y reconoce los videos de YouTube que ya están cargados, **aunque el título sea distinto**. Esos videos se omiten solos y se muestran con un enlace al episodio.
-- **Selección a mano:** en *Programas sincronizados*, cambia la columna **Videos a importar** a «Solo los que elija» y presiona **Elegir videos**. Verás la playlist con una casilla por video: marca los que quieras y usa **Guardar e importar los seleccionados ahora**. En modo «Todos los nuevos» se importa todo lo nuevo, salvo lo que desmarques.
-- Si algún episodio antiguo tiene el video **subido como archivo** (no como enlace de YouTube), no se puede reconocer; en ese caso usa el modo manual y deja sin marcar ese video.
-- Lo que marcas a mano manda sobre la fecha *Importar videos desde*.
+- **Automatic detection:** the plugin reads the link or embed code of every Streamit episode and recognises the YouTube videos that are already there, **even if the title is different**. Those videos are skipped and shown with a link to the episode.
+- **Manual selection:** in *Synced programs* set the **Videos to import** column to “Only the ones I choose” and press **Choose videos**. You will see the playlist with a checkbox per video. In “All new videos” mode everything new is imported except what you uncheck.
+- If an old episode has the video **uploaded as a file** (not a YouTube link) it cannot be recognised; use manual mode and leave that video unchecked.
+- What you check by hand takes priority over *Import videos from*.
 
-## API key de YouTube (recomendada)
+## YouTube API key (recommended)
 
-El feed RSS de YouTube falla de forma intermitente (responde 404 durante horas). Con una API key gratuita el plugin lee las playlists por la API oficial y deja el RSS de respaldo.
+The YouTube RSS feed fails intermittently (it can answer 404 for hours). With a free API key the plugin reads playlists through the official API and keeps RSS as a fallback.
 
-1. En [Google Cloud](https://console.cloud.google.com/) crea un proyecto y habilita **YouTube Data API v3**.
-2. Crea una **clave de API** y restríngela a esa API.
-3. Pégala en el panel, o mejor, defínela en `wp-config.php` para que no quede en la base de datos:
+1. In [Google Cloud](https://console.cloud.google.com/) create a project and enable **YouTube Data API v3**.
+2. Create an **API key** and restrict it to that API.
+3. Paste it in **Settings**, or better, define it in `wp-config.php` so it is not stored in the database:
 
 ```php
-define( 'YTS_API_KEY', 'tu-clave' );
+define( 'YTS_API_KEY', 'your-key' );
 ```
 
-## Si algo falla
+## Languages and mobile
 
-| Síntoma | Qué significa |
+- The interface follows your WordPress language: **Settings → General → Site Language**, or per user in **Users → Profile → Language**. English, Spanish (Spain, Chile, Colombia, Mexico, Argentina) and Portuguese (Brazil, Portugal) are included.
+- On phones the menu tabs slide sideways, tables turn into cards, the save bar stays at the bottom and fields are sized for touch.
+
+## Troubleshooting
+
+| Symptom | What it means |
 |---|---|
-| `HTTP 404` al leer la playlist | Falla temporal del feed RSS de YouTube. Se reintenta solo; usa la API key para evitarlo. |
-| `quota` en el informe | Se agotó la cuota diaria de la API (se reinicia a medianoche, hora del Pacífico de EE. UU.). |
-| Video omitido por «fecha de inicio» | YouTube cuenta la fecha de publicación del video, no la de agregarlo a la playlist. Ajusta *Importar videos desde*. |
-| Episodios que no aparecen en el programa | Botón **Reparar enlaces**. |
+| `HTTP 404` when reading the playlist | Temporary failure of YouTube's RSS feed. It retries on its own; use the API key to avoid it. |
+| `quota` in the report | The daily API quota is used up (it resets at midnight, US Pacific time). |
+| Video skipped for the “start date” | YouTube uses the video's publish date, not the date it was added to the playlist. Adjust *Import videos from*. |
+| Episodes not showing in the program | **Tools → Repair links**. |
 
-Más detalle en [MANTENIMIENTO.md](MANTENIMIENTO.md).
+More detail in [MANTENIMIENTO.md](MANTENIMIENTO.md) (maintenance guide, in Spanish).
 
-## Seguridad
+## Security
 
-- Todas las acciones del panel exigen permiso de administrador y nonce (formularios POST).
-- La API key no se muestra en el panel una vez guardada y puede vivir en `wp-config.php`.
-- Los datos que vienen de YouTube (ID de video, títulos, descripciones) se validan y escapan antes de usarse.
-- Al **borrar** el plugin se eliminan sus ajustes; los episodios importados se conservan.
+- Every panel action requires administrator permission and a nonce (POST forms).
+- The API key is not shown in the panel once saved and can live in `wp-config.php`.
+- Data coming from YouTube (video IDs, titles, descriptions) is validated and escaped before use.
+- **Deleting** the plugin removes its settings; imported episodes are kept.
 
-## Desarrollo
+## Development
 
 ```bash
-php tests/smoke-test.php                                   # lógica del plugin, sin WordPress (116 comprobaciones)
-npm install jsdom --no-save && node tests/panel-test.js    # JavaScript del panel (36 comprobaciones, opcional)
+php tests/smoke-test.php                                          # plugin logic, no WordPress needed (129 checks)
+npm install jsdom --no-save && node tests/panel-test.js           # panel JavaScript (37 checks, optional)
+npm install puppeteer-core @sparticuz/chromium --no-save && node tests/mobile-test.js   # responsive layout in a real browser (100 checks, optional)
+bin/update-translations.sh                                        # refresh .pot/.po/.mo after changing texts
 ```
 
-Estructura y recetas para modificar el plugin: [MANTENIMIENTO.md](MANTENIMIENTO.md). Historial de cambios: [CHANGELOG.md](CHANGELOG.md).
+Structure and recipes: [MANTENIMIENTO.md](MANTENIMIENTO.md). Changes: [CHANGELOG.md](CHANGELOG.md).
 
-## Licencia
+## License
 
-GPL-2.0-or-later. Ver [LICENSE](LICENSE).
+GPL-2.0-or-later. See [LICENSE](LICENSE).

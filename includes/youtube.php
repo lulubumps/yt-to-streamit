@@ -49,14 +49,15 @@ function yts_fetch_rss( $playlist ) {
 					}
 					return [ 'error' => '', 'entries' => $out ]; // más nuevo primero
 				}
-				$last = 'respuesta no interpretable';
+				$last = __( 'response could not be parsed', 'yt-to-streamit' );
 			} else {
 				$last = "HTTP $code";
 			}
 		}
 		if ( $i < 3 ) sleep( (int) apply_filters( 'yts_retry_delay', 2 ) );
 	}
-	return [ 'error' => "$last tras 3 intentos", 'entries' => [] ];
+	/* translators: %s: last error (for example "HTTP 404") */
+	return [ 'error' => sprintf( __( '%s after 3 attempts', 'yt-to-streamit' ), $last ), 'entries' => [] ];
 }
 
 // API oficial de YouTube (requiere API key gratuita). Lee hasta 500 videos de la playlist.

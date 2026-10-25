@@ -26,14 +26,16 @@ function yts_cached_videos( $playlist, $s, $refresh = false ) {
 
 function yts_page_videos() {
 	if ( ! current_user_can( 'manage_options' ) ) return;
-	$s = yts_settings();
-	$i = isset( $_GET['program'] ) && '' !== $_GET['program'] ? absint( $_GET['program'] ) : -1;
+	$s    = yts_settings();
+	$i    = isset( $_GET['program'] ) && '' !== $_GET['program'] ? absint( $_GET['program'] ) : -1;
+	$kses = [ 'strong' => [], 'a' => [ 'href' => [] ] ];
 
 	yts_admin_header( 'yts-videos' );
-	echo '<h2>Videos de la playlist</h2>';
+	echo '<h2>' . esc_html__( 'Playlist videos', 'yt-to-streamit' ) . '</h2>';
 
 	if ( ! $s['programs'] ) {
-		echo '<p class="description">Primero agrega un programa en <a href="' . esc_url( admin_url( 'admin.php?page=yts' ) ) . '">Programas sincronizados</a>.</p>';
+		/* translators: %s: link to the “Synced programs” page */
+		echo '<p class="description">' . wp_kses( sprintf( __( 'First add a program in %s.', 'yt-to-streamit' ), '<a href="' . esc_url( admin_url( 'admin.php?page=yts' ) ) . '">' . esc_html__( 'Synced programs', 'yt-to-streamit' ) . '</a>' ), $kses ) . '</p>';
 		yts_admin_footer();
 		return;
 	}
@@ -44,9 +46,9 @@ function yts_page_videos() {
 	?>
 	<form method="get" action="" class="yts-toolbar">
 		<input type="hidden" name="page" value="yts-videos">
-		<label for="yts-program-pick"><strong>Programa:</strong></label>
+		<label for="yts-program-pick"><strong><?php esc_html_e( 'Program:', 'yt-to-streamit' ); ?></strong></label>
 		<div class="yts-combo" data-source="programs" data-submit="1">
-			<input type="text" id="yts-program-pick" class="yts-combo-input" value="<?php echo esc_attr( $cur_label ); ?>" placeholder="Buscar programa sincronizado…" autocomplete="off">
+			<input type="text" id="yts-program-pick" class="yts-combo-input" value="<?php echo esc_attr( $cur_label ); ?>" placeholder="<?php esc_attr_e( 'Search synced program…', 'yt-to-streamit' ); ?>" autocomplete="off">
 			<input type="hidden" name="program" value="<?php echo $has_sel ? (int) $i : ''; ?>">
 			<div class="yts-combo-list" hidden></div>
 		</div>
@@ -57,12 +59,12 @@ function yts_page_videos() {
 				<?php endforeach; ?>
 			</select>
 		</noscript>
-		<button class="button">Ver videos</button>
+		<button class="button"><?php esc_html_e( 'View videos', 'yt-to-streamit' ); ?></button>
 	</form>
 	<?php
 
 	if ( ! isset( $s['programs'][ $i ] ) ) {
-		echo '<p class="description">Elige un programa para ver los videos de su playlist. También puedes entrar con el botón <strong>Elegir videos</strong> de cada fila en «Programas sincronizados».</p>';
+		echo '<p class="description">' . wp_kses( __( 'Choose a program to see the videos of its playlist. You can also come in with the <strong>Choose videos</strong> button on each row in “Synced programs”.', 'yt-to-streamit' ), $kses ) . '</p>';
 		yts_admin_footer();
 		return;
 	}
@@ -74,41 +76,55 @@ function yts_page_videos() {
 	$feed    = yts_cached_videos( $p['playlist'], $s, $refresh );
 	$self    = admin_url( 'admin.php?page=yts-videos&program=' . $i );
 
-	echo '<div class="yts-card"><p style="margin-top:0"><strong>' . esc_html( $name ) . '</strong> — modo de videos: <strong>' . ( 'manual' === $mode ? 'solo los que elijas' : 'todos los nuevos' ) . '</strong>. ';
-	echo ( 'manual' === $mode )
-		? 'Solo se importan los videos que marques aquí.'
-		: 'Se importan todos los videos nuevos, salvo los que desmarques aquí.';
-	echo ' El modo se cambia en <a href="' . esc_url( admin_url( 'admin.php?page=yts' ) ) . '">Programas sincronizados</a> (columna «Videos»).</p>';
-	echo '<p style="margin-bottom:0" class="description">Los videos que <strong>ya están cargados en Streamit</strong> se detectan por su enlace o código embed (aunque el título sea distinto) y se omiten solos.</p></div>';
+	$mode_label = ( 'manual' === $mode ) ? __( 'only the ones you choose', 'yt-to-streamit' ) : __( 'all new videos', 'yt-to-streamit' );
+	$mode_text  = ( 'manual' === $mode )
+		? __( 'Only the videos you check here are imported.', 'yt-to-streamit' )
+		: __( 'All new videos are imported, except the ones you uncheck here.', 'yt-to-streamit' );
+	$progs_link = '<a href="' . esc_url( admin_url( 'admin.php?page=yts' ) ) . '">' . esc_html__( 'Synced programs', 'yt-to-streamit' ) . '</a>';
+
+	echo '<div class="yts-card"><p>';
+	/* translators: 1: program name, 2: video mode */
+	echo wp_kses( sprintf( __( '%1$s — video mode: %2$s.', 'yt-to-streamit' ), '<strong>' . esc_html( $name ) . '</strong>', '<strong>' . esc_html( $mode_label ) . '</strong>' ), $kses );
+	echo ' ' . esc_html( $mode_text ) . ' ';
+	/* translators: %s: link to the “Synced programs” page */
+	echo wp_kses( sprintf( __( 'The mode is changed in %s (“Videos to import” column).', 'yt-to-streamit' ), $progs_link ), $kses );
+	echo '</p><p class="description">' . wp_kses( __( 'Videos that are <strong>already loaded in Streamit</strong> are detected by their link or embed code (even if the title is different) and are skipped automatically.', 'yt-to-streamit' ), $kses ) . '</p></div>';
 
 	if ( ! empty( $feed['error'] ) ) {
-		echo '<div class="notice notice-warning inline"><p><strong>No se pudo leer la playlist:</strong> ' . esc_html( $feed['error'] ) . ' <a href="' . esc_url( add_query_arg( 'refresh', 1, $self ) ) . '">Reintentar</a></p></div>';
+		/* translators: %s: error detail */
+		echo '<div class="notice notice-warning inline"><p>' . wp_kses( sprintf( __( '<strong>The playlist could not be read:</strong> %s', 'yt-to-streamit' ), esc_html( $feed['error'] ) ), $kses ) . ' <a href="' . esc_url( add_query_arg( 'refresh', 1, $self ) ) . '">' . esc_html__( 'Retry', 'yt-to-streamit' ) . '</a></p></div>';
 		yts_admin_footer();
 		return;
 	}
 	if ( empty( $feed['entries'] ) ) {
-		echo '<p class="description">La playlist no trae videos.</p>';
+		echo '<p class="description">' . esc_html__( 'The playlist has no videos.', 'yt-to-streamit' ) . '</p>';
 		yts_admin_footer();
 		return;
 	}
 
 	// Clasificar cada video
-	$since  = strtotime( $s['import_since'] );
-	$rows   = [];
-	$count  = [ 'import' => 0, 'exists' => 0, 'skip' => 0, 'old' => 0 ];
+	$since = strtotime( $s['import_since'] );
+	$rows  = [];
+	$count = [ 'import' => 0, 'exists' => 0, 'skip' => 0, 'old' => 0 ];
 	foreach ( $feed['entries'] as $e ) {
 		list( $kind, $note, $ep ) = yts_classify_video( $p, $s, $e, $since );
 		$count[ $kind ]++;
 		$rows[] = [ $e, $kind, $note, $ep ];
 	}
 
-	echo '<p><strong>' . count( $rows ) . ' videos</strong> (vía ' . esc_html( $feed['source'] ) . '): '
-		. (int) $count['import'] . ' por importar · ' . (int) $count['exists'] . ' ya existen en Streamit · '
-		. (int) $count['skip'] . ' sin seleccionar · ' . (int) $count['old'] . ' anteriores a la fecha de inicio. '
-		. '<a href="' . esc_url( add_query_arg( 'refresh', 1, $self ) ) . '">Actualizar lista</a>';
-	if ( 'RSS' === $feed['source'] ) echo '<br><span class="description">Sin API key solo se ven los últimos 15 videos de la playlist. Con una API key (Ajustes) se ven hasta 500.</span>';
+	echo '<p>';
+	/* translators: 1: number of videos, 2: source (API or RSS), 3: to import, 4: already in Streamit, 5: not selected, 6: before the start date */
+	echo wp_kses( sprintf( __( '<strong>%1$d videos</strong> (via %2$s): %3$d to import · %4$d already exist in Streamit · %5$d not selected · %6$d before the start date.', 'yt-to-streamit' ), count( $rows ), esc_html( $feed['source'] ), $count['import'], $count['exists'], $count['skip'], $count['old'] ), $kses );
+	echo ' <a href="' . esc_url( add_query_arg( 'refresh', 1, $self ) ) . '">' . esc_html__( 'Refresh list', 'yt-to-streamit' ) . '</a>';
+	if ( 'RSS' === $feed['source'] ) echo '<br><span class="description">' . esc_html__( 'Without an API key you only see the last 15 videos of the playlist. With an API key (Settings) you see up to 500.', 'yt-to-streamit' ) . '</span>';
 	echo '</p>';
 
+	$l = [
+		'import'    => esc_attr_x( 'Import', 'column header: import this video', 'yt-to-streamit' ),
+		'title'     => esc_attr__( 'Title on YouTube', 'yt-to-streamit' ),
+		'published' => esc_attr__( 'Published', 'yt-to-streamit' ),
+		'status'    => esc_attr__( 'Status', 'yt-to-streamit' ),
+	];
 	?>
 	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 		<input type="hidden" name="action" value="yts_save">
@@ -117,38 +133,38 @@ function yts_page_videos() {
 		<?php wp_nonce_field( 'yts_save' ); ?>
 
 		<div class="yts-toolbar">
-			<input type="search" id="yts-video-filter" class="regular-text" placeholder="Filtrar videos por título…">
-			<button type="button" class="button" data-yts-check="all">Marcar todos</button>
-			<button type="button" class="button" data-yts-check="none">Desmarcar todos</button>
+			<input type="search" id="yts-video-filter" class="regular-text" placeholder="<?php esc_attr_e( 'Filter videos by title…', 'yt-to-streamit' ); ?>">
+			<button type="button" class="button" data-yts-check="all"><?php esc_html_e( 'Check all', 'yt-to-streamit' ); ?></button>
+			<button type="button" class="button" data-yts-check="none"><?php esc_html_e( 'Uncheck all', 'yt-to-streamit' ); ?></button>
 		</div>
 
-		<table class="widefat striped yts-paginated" id="yts-videos-table" data-per-page="25" data-filter="#yts-video-filter">
-			<thead><tr><th style="width:60px">Importar</th><th style="width:70px"></th><th>Título en YouTube</th><th>Publicado</th><th>Estado</th></tr></thead>
+		<table class="widefat striped yts-paginated yts-stack yts-videos" id="yts-videos-table" data-cards-below="760" data-per-page="25" data-filter="#yts-video-filter">
+			<thead><tr><th class="yts-col-pick"><?php echo esc_html( $l['import'] ); ?></th><th class="yts-col-thumb"></th><th><?php echo esc_html( $l['title'] ); ?></th><th><?php echo esc_html( $l['published'] ); ?></th><th><?php echo esc_html( $l['status'] ); ?></th></tr></thead>
 			<tbody>
 			<?php foreach ( $rows as $r ) :
 				list( $e, $kind, $note, $ep ) = $r;
 				$locked = ( 'exists' === $kind );
 				?>
 				<tr>
-					<td>
+					<td class="yts-col-pick" data-label="<?php echo $l['import']; ?>">
 						<?php if ( $locked ) : ?>
-							<input type="checkbox" disabled title="Ya existe en Streamit">
+							<input type="checkbox" disabled title="<?php esc_attr_e( 'Already exists in Streamit', 'yt-to-streamit' ); ?>">
 						<?php else : ?>
 							<input type="checkbox" name="pick[]" value="<?php echo esc_attr( $e['id'] ); ?>" <?php checked( 'import' === $kind ); ?>>
 							<input type="hidden" name="listed[]" value="<?php echo esc_attr( $e['id'] ); ?>">
 						<?php endif; ?>
 					</td>
-					<td><img src="<?php echo esc_url( 'https://i.ytimg.com/vi/' . $e['id'] . '/default.jpg' ); ?>" width="60" alt="" loading="lazy"></td>
-					<td><a href="<?php echo esc_url( 'https://www.youtube.com/watch?v=' . $e['id'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $e['title'] ); ?></a></td>
-					<td><?php echo esc_html( get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $e['published'] ), 'Y-m-d' ) ); ?></td>
-					<td>
+					<td class="yts-col-thumb"><img src="<?php echo esc_url( 'https://i.ytimg.com/vi/' . $e['id'] . '/default.jpg' ); ?>" width="60" alt="" loading="lazy"></td>
+					<td data-label="<?php echo $l['title']; ?>"><a href="<?php echo esc_url( 'https://www.youtube.com/watch?v=' . $e['id'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $e['title'] ); ?></a></td>
+					<td data-label="<?php echo $l['published']; ?>"><?php echo esc_html( get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $e['published'] ), 'Y-m-d' ) ); ?></td>
+					<td data-label="<?php echo $l['status']; ?>">
 						<?php
 						if ( $locked ) {
-							echo '✅ Ya existe en Streamit';
+							echo '✅ ' . esc_html__( 'Already exists in Streamit', 'yt-to-streamit' );
 							if ( $ep ) echo ': <a href="' . esc_url( admin_url( 'admin.php?page=streamit-edit-tvshow-episode&id=' . (int) $ep['id'] ) ) . '">' . esc_html( $ep['title'] ) . ' (#' . (int) $ep['id'] . ')</a>';
-							else echo ' (importado por este plugin)';
+							else echo ' ' . esc_html__( '(imported by this plugin)', 'yt-to-streamit' );
 						} elseif ( 'import' === $kind ) {
-							echo '🟢 Se importará';
+							echo '🟢 ' . esc_html__( 'Will be imported', 'yt-to-streamit' );
 						} else {
 							echo '⚪ ' . esc_html( ucfirst( $note ) );
 						}
@@ -159,11 +175,11 @@ function yts_page_videos() {
 			</tbody>
 		</table>
 
-		<p class="submit">
-			<button type="submit" class="button button-primary">Guardar selección</button>
-			<button type="submit" name="yts_after" value="sync" class="button">Guardar e importar los seleccionados ahora</button>
+		<p class="submit yts-submit">
+			<button type="submit" class="button button-primary"><?php esc_html_e( 'Save selection', 'yt-to-streamit' ); ?></button>
+			<button type="submit" name="yts_after" value="sync" class="button"><?php esc_html_e( 'Save and import the selected ones now', 'yt-to-streamit' ); ?></button>
 		</p>
-		<p class="description">Guarda tu elección antes de salir de la página. Si marcas un video publicado antes de «Importar videos desde», se importa igual: tu selección manda sobre la fecha.</p>
+		<p class="description"><?php esc_html_e( 'Save your choice before leaving the page. If you check a video published before “Import videos from”, it is imported anyway: your selection takes priority over the date.', 'yt-to-streamit' ); ?></p>
 	</form>
 	<?php
 	yts_admin_footer();

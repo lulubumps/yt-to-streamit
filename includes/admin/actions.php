@@ -94,7 +94,7 @@ function yts_handle_save() {
 			/* translators: %s: summary of the sync (for example "3 episode(s) created") */
 			$msg = sprintf( __( 'Selection saved. Sync: %s.', 'yt-to-streamit' ), yts_summary( yts_run( false, $i ) ) );
 		}
-		yts_back( $msg, 'yts-videos', [ 'program' => $i ] );
+		yts_back( $msg, 'yts-videos', [ 'program' => $i ] + ( isset( $_POST['yts_after'] ) && 'sync' === $_POST['yts_after'] ? [ 'yts_log' => 1 ] : [] ) );
 
 	} else {
 		yts_back( __( 'I did not understand what to save. Reload the page and try again.', 'yt-to-streamit' ) );
@@ -120,9 +120,9 @@ function yts_handle_action() {
 	$do  = isset( $_POST['yts_do'] ) ? sanitize_text_field( wp_unslash( $_POST['yts_do'] ) ) : '';
 	$ret = isset( $_POST['yts_return'] ) ? sanitize_key( wp_unslash( $_POST['yts_return'] ) ) : 'yts';
 
-	// Cerrar ventanas (lo llama JavaScript; responde sin contenido)
-	if ( 'close_report' === $do || 'close_log' === $do ) {
-		delete_option( 'close_report' === $do ? 'yts_last_report' : 'yts_last_log' );
+	// Cerrar el informe de verificación (lo llama JavaScript; responde sin contenido)
+	if ( 'close_report' === $do ) {
+		delete_option( 'yts_last_report' );
 		status_header( 204 );
 		exit;
 	}
@@ -135,17 +135,21 @@ function yts_handle_action() {
 		$p    = $s['programs'][ $i ];
 		$name = ! empty( $p['label'] ) ? $p['label'] : $p['playlist'];
 		/* translators: 1: program name, 2: summary of the sync */
-		yts_back( sprintf( __( 'Program “%1$s” synced: %2$s. See the details below.', 'yt-to-streamit' ), $name, yts_summary( yts_run( false, $i ) ) ), $ret );
+		yts_back( sprintf( __( 'Program “%1$s” synced: %2$s.', 'yt-to-streamit' ), $name, yts_summary( yts_run( false, $i ) ) ), $ret, [ 'yts_log' => 1 ] );
 	}
 
 	switch ( $do ) {
 		case 'run_now':
 			/* translators: %s: summary of the sync (for example "3 episode(s) created") */
-			yts_back( sprintf( __( 'Sync finished: %s. See the details below.', 'yt-to-streamit' ), yts_summary( yts_run() ) ), $ret );
+			yts_back( sprintf( __( 'Sync finished: %s.', 'yt-to-streamit' ), yts_summary( yts_run() ) ), $ret, [ 'yts_log' => 1 ] );
 
 		case 'diag':
 			yts_run( true );
-			yts_back( __( 'Diagnostic ready. See the details below.', 'yt-to-streamit' ), $ret );
+			yts_back( __( 'Diagnostic ready.', 'yt-to-streamit' ), $ret, [ 'yts_log' => 1 ] );
+
+		case 'clear_log':
+			delete_option( 'yts_last_log' );
+			yts_back( __( 'Log cleared.', 'yt-to-streamit' ), 'yts-log' );
 
 		case 'repair':
 			$res = yts_repair();

@@ -13,7 +13,6 @@ function yts_page_tools() {
 	if ( ! current_user_can( 'manage_options' ) ) return;
 
 	yts_admin_header( 'yts-tools' );
-	yts_render_log();
 	?>
 	<h2><?php esc_html_e( 'Manual actions', 'yt-to-streamit' ); ?></h2>
 	<table class="widefat striped yts-tools yts-stack">

@@ -149,6 +149,8 @@
 		var per = parseInt(table.getAttribute('data-per-page') || '10', 10);
 		var filterSel = table.getAttribute('data-filter');
 		var filterEl = filterSel ? document.querySelector(filterSel) : null;
+		var kindSel = table.getAttribute('data-filter-select'); // opcional: <select> que filtra por tr[data-code]
+		var kindEl = kindSel ? document.querySelector(kindSel) : null;
 		var page = 1;
 
 		var pager = document.createElement('div');
@@ -158,6 +160,7 @@
 		function rows() { return Array.prototype.slice.call(body.rows); }
 
 		function matchesFilter(tr) {
+			if (kindEl && kindEl.value && tr.getAttribute('data-code') !== kindEl.value) return false;
 			if (!filterEl || !filterEl.value) return true;
 			var text = tr.textContent;
 			each(tr.querySelectorAll('input[type=text]'), function (inp) { text += ' ' + inp.value; });
@@ -177,7 +180,7 @@
 
 		function draw(total, pages) {
 			pager.innerHTML = '';
-			var filtering = !!(filterEl && filterEl.value);
+			var filtering = !!((filterEl && filterEl.value) || (kindEl && kindEl.value));
 			if (total <= per && !filtering) return; // nada que paginar
 
 			var info = document.createElement('span');
@@ -212,6 +215,7 @@
 		}
 
 		if (filterEl) filterEl.addEventListener('input', function () { page = 1; refresh(); });
+		if (kindEl) kindEl.addEventListener('change', function () { page = 1; refresh(); });
 		table.ytsRefresh = refresh;
 		table.ytsLast = function () { page = Infinity; refresh(); };
 		refresh();

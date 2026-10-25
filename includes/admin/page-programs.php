@@ -81,7 +81,6 @@ function yts_page_programs() {
 	$kses = [ 'strong' => [] ];
 
 	yts_admin_header( 'yts' );
-	yts_render_log();
 	?>
 	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 		<input type="hidden" name="action" value="yts_save">

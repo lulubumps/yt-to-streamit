@@ -9,7 +9,7 @@ Plugin do WordPress que **importa automaticamente os vídeos das suas playlists 
 ## O que faz
 
 - Um programa do Streamit = uma playlist do YouTube. Cada vídeo novo vira um episódio, com título, descrição e miniatura (convertida para WebP quando o servidor consegue).
-- Menu próprio **YouTube para Streamit** com seis seções: *Programas sincronizados*, *Vídeos da playlist*, *Configurações*, *Ferramentas*, *Episódios importados* e *Verificação do sistema*.
+- Menu próprio **YouTube para Streamit** com sete seções: *Programas sincronizados*, *Vídeos da playlist*, *Configurações*, *Ferramentas*, *Episódios importados*, *Registro de sincronização* e *Verificação do sistema*.
 - Seletor de programa **com busca** e listas **paginadas** (pensado para muitos programas).
 - **Escolha quais vídeos importar**, um por um, e **detecte os episódios que você já tinha** — mesmo que o título seja diferente do do YouTube.
 - Ative ou desative programas com uma caixa de seleção, ou sincronize só um manualmente.
@@ -35,7 +35,7 @@ Plugin do WordPress que **importa automaticamente os vídeos das suas playlists 
 2. **Programas sincronizados → + Adicionar programa:** busque e escolha o programa do Streamit, cole a URL ou o ID da playlist e defina o episódio em que quer o aviso.
 3. Na mesma página, defina **Importar vídeos a partir de** (evita trazer todo o histórico) e **Status ao importar**. Comece em *Rascunho*. **Salvar alterações**.
 4. **Verificação do sistema → Verificar + teste de criação:** tudo deve ficar verde.
-5. Clique em **Sincronizar agora**, revise um episódio no Streamit e, quando estiver bom, mude para *Publicado*.
+5. Clique em **Sincronizar agora**. Um aviso traz o link para o **Registro de sincronização**, onde cada vídeo aparece com o que aconteceu. Revise um episódio no Streamit e, quando estiver bom, mude para *Publicado*.
 
 A sincronização automática roda **a cada 12 horas** por padrão; você pode mudar em *Configurações → Frequência* (30 min, 1 h, 6 h, 12 h ou 24 h). Usa o WP-Cron, que só dispara quando alguém visita o site. Para importar na hora, use **Sincronizar agora**.
 
@@ -84,9 +84,9 @@ Mais detalhes em [MANTENIMIENTO.md](MANTENIMIENTO.md) (guia de manutenção, em 
 ## Desenvolvimento
 
 ```bash
-php tests/smoke-test.php                                          # lógica do plugin, sem WordPress (129 verificações)
-npm install jsdom --no-save && node tests/panel-test.js           # JavaScript do painel (37 verificações, opcional)
-npm install puppeteer-core @sparticuz/chromium --no-save && node tests/mobile-test.js   # layout responsivo em um navegador real (100 verificações, opcional)
+php tests/smoke-test.php                                          # lógica do plugin, sem WordPress (141 verificações)
+npm install jsdom --no-save && node tests/panel-test.js           # JavaScript do painel (42 verificações, opcional)
+npm install puppeteer-core @sparticuz/chromium --no-save && node tests/mobile-test.js   # layout responsivo em um navegador real (116 verificações, opcional)
 bin/update-translations.sh                                        # atualiza .pot/.po/.mo depois de mudar textos
 ```
 

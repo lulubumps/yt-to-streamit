@@ -3,7 +3,7 @@
  * Plugin Name:       YouTube to Streamit
  * Plugin URI:        https://github.com/lulubumps/yt-to-streamit
  * Description:       Automatically imports the videos of YouTube playlists as Streamit episodes and sends an email notice when a program reaches an episode number. Independent project, not affiliated with Iqonic or Streamit.
- * Version:           3.6.0
+ * Version:           3.7.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Lulubumps
@@ -18,7 +18,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'YTS_VERSION', '3.6.0' );
+define( 'YTS_VERSION', '3.7.0' );
 define( 'YTS_FILE', __FILE__ );
 define( 'YTS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'YTS_URL', plugin_dir_url( __FILE__ ) );
@@ -43,6 +43,7 @@ if ( is_admin() ) {
 	require_once YTS_DIR . 'includes/admin/page-settings.php';
 	require_once YTS_DIR . 'includes/admin/page-tools.php';
 	require_once YTS_DIR . 'includes/admin/page-imported.php';
+	require_once YTS_DIR . 'includes/admin/page-log.php';
 	require_once YTS_DIR . 'includes/admin/page-verify.php';
 	require_once YTS_DIR . 'includes/admin/actions.php';
 }

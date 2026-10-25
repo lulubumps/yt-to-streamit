@@ -21,6 +21,7 @@ function yts_pages() {
 		'yts-settings' => [ __( 'Settings', 'yt-to-streamit' ), 'yts_page_settings' ],
 		'yts-tools'    => [ __( 'Tools', 'yt-to-streamit' ), 'yts_page_tools' ],
 		'yts-imported' => [ __( 'Imported episodes', 'yt-to-streamit' ), 'yts_page_imported' ],
+		'yts-log'      => [ __( 'Sync log', 'yt-to-streamit' ), 'yts_page_log' ],
 		'yts-verify'   => [ __( 'System check', 'yt-to-streamit' ), 'yts_page_verify' ],
 	];
 }
@@ -93,7 +94,11 @@ function yts_admin_header( $current ) {
 
 	echo '<div class="wrap yts-wrap"><h1>' . esc_html__( 'YouTube to Streamit', 'yt-to-streamit' ) . '</h1>';
 	if ( ! yts_ready() ) echo '<div class="notice notice-error"><p>' . wp_kses( __( '<strong>The Streamit plugin is not active</strong> (or its version does not have the expected functions). This plugin needs Streamit 1.3.x.', 'yt-to-streamit' ), [ 'strong' => [] ] ) . '</p></div>';
-	if ( $msg ) echo '<div class="notice notice-info is-dismissible"><p>' . esc_html( $msg ) . '</p></div>';
+	if ( $msg ) {
+		// Tras una sincronización o un diagnóstico (yts_log=1) el aviso trae un enlace al registro
+		$link = isset( $_GET['yts_log'] ) ? ' <a href="' . esc_url( admin_url( 'admin.php?page=yts-log' ) ) . '">' . esc_html__( 'View the sync log', 'yt-to-streamit' ) . '</a>' : '';
+		echo '<div class="notice notice-info is-dismissible"><p>' . esc_html( $msg ) . $link . '</p></div>';
+	}
 	if ( $err ) {
 		/* translators: %s: error message */
 		echo '<div class="notice notice-error"><p>' . wp_kses( sprintf( __( '<strong>Last email error:</strong> %s', 'yt-to-streamit' ), esc_html( $err ) ), [ 'strong' => [] ] ) . '</p></div>';

@@ -9,7 +9,7 @@ WordPress plugin that **automatically imports the videos of your YouTube playlis
 ## Features
 
 - One Streamit program = one YouTube playlist. Every new video becomes an episode, with title, description and thumbnail (converted to WebP when the server can).
-- Own menu **YouTube to Streamit** with six sections: *Synced programs*, *Playlist videos*, *Settings*, *Tools*, *Imported episodes* and *System check*.
+- Own menu **YouTube to Streamit** with seven sections: *Synced programs*, *Playlist videos*, *Settings*, *Tools*, *Imported episodes*, *Sync log* and *System check*.
 - Program picker **with search** and **paginated** lists (built for many programs).
 - **Choose which videos to import**, one by one, and **detect episodes you already had** — even if their title differs from YouTube's.
 - Turn programs on/off with a checkbox, or sync a single one by hand.
@@ -35,7 +35,7 @@ WordPress plugin that **automatically imports the videos of your YouTube playlis
 2. **Synced programs → + Add program:** search and choose the Streamit program, paste its playlist URL or ID and set the episode that should trigger the notice.
 3. On the same page set **Import videos from** (avoids importing the whole history) and **Status when importing**. Start with *Draft*. **Save changes**.
 4. **System check → Check + creation test:** everything should be green.
-5. Press **Sync now**, review an episode in Streamit and, when it looks right, switch to *Published*.
+5. Press **Sync now**. A notice links to the **Sync log**, where every video is listed with what happened to it. Review an episode in Streamit and, when it looks right, switch to *Published*.
 
 Automatic sync runs **every 12 hours** by default (you can change it: 30 min, 1 h, 6 h, 12 h or 24 h). It uses WP-Cron, which only fires when someone visits the site. To import right away use **Sync now**.
 
@@ -84,9 +84,9 @@ More detail in [MANTENIMIENTO.md](MANTENIMIENTO.md) (maintenance guide, in Spani
 ## Development
 
 ```bash
-php tests/smoke-test.php                                          # plugin logic, no WordPress needed (129 checks)
-npm install jsdom --no-save && node tests/panel-test.js           # panel JavaScript (37 checks, optional)
-npm install puppeteer-core @sparticuz/chromium --no-save && node tests/mobile-test.js   # responsive layout in a real browser (100 checks, optional)
+php tests/smoke-test.php                                          # plugin logic, no WordPress needed (141 checks)
+npm install jsdom --no-save && node tests/panel-test.js           # panel JavaScript (42 checks, optional)
+npm install puppeteer-core @sparticuz/chromium --no-save && node tests/mobile-test.js   # responsive layout in a real browser (116 checks, optional)
 bin/update-translations.sh                                        # refresh .pot/.po/.mo after changing texts
 ```
 

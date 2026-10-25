@@ -25,6 +25,10 @@
 .yts-wrap .yts-warn { color: #b32d2e; }
 .yts-wrap .yts-group summary { cursor: pointer; font-size: 14px; padding: 6px 0; }
 .yts-wrap .yts-close { display: block; margin: 0 0 8px auto; } /* botón «Cerrar» en su propia fila, a la derecha */
+.yts-wrap .yts-log-summary { margin: 0 0 6px; }
+.yts-wrap .yts-kind-error strong { color: #b32d2e; }
+.yts-wrap .yts-kind-created strong { color: #00a32a; }
+.yts-wrap .yts-toolbar select { max-width: 100%; }
 .yts-wrap .yts-report-text { width: 100%; font-family: monospace; font-size: 12px; }
 .yts-wrap .yts-tool-btn { width: 240px; }
 .yts-wrap .yts-tools td { vertical-align: middle; }

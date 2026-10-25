@@ -23,7 +23,8 @@ Cómo está armado el plugin y cómo modificarlo sin romperlo.
 | `includes/admin/page-tools.php` | **Herramientas**: acciones manuales y visor de campos | Agregas una herramienta |
 | `includes/admin/page-imported.php` | **Episodios importados** | Cambias esa lista |
 | `includes/admin/page-verify.php` | **Verificación del sistema** (botones + informe) | Cambias su presentación |
-| `includes/admin/components.php` | Piezas compartidas: botón Cerrar, informe, registro | Cambias el informe o el registro |
+| `includes/admin/page-log.php` | **Registro de sincronización**: resultado de la última sincronización o diagnóstico, con filtro por tipo | Cambias esa pantalla o agregas un tipo de resultado |
+| `includes/admin/components.php` | Piezas compartidas: botón Cerrar e informe de verificación | Cambias el informe |
 | `includes/admin/actions.php` | Guarda por secciones y atiende los botones | Agregas un botón o un ajuste |
 | `assets/admin.js` | Selector con buscador, paginación y filtro, agregar/quitar filas | Cambias el comportamiento del panel |
 | `assets/admin.css` | Estilos del panel y diseño adaptable (tarjetas en pantallas chicas) | Cambias el diseño |
@@ -81,6 +82,9 @@ Copia `languages/yt-to-streamit.pot` como `languages/yt-to-streamit-xx_YY.po` (p
 
 ### Diseño adaptable: cómo funcionan las tarjetas
 Una tabla con la clase `yts-stack` se convierte en tarjetas cuando el ancho de su contenedor baja de `data-cards-below` (píxeles; 720 por defecto, 1180 la de programas). `assets/admin.js` pone la clase `yts-card-mode` y `assets/admin.css` la dibuja: oculta el encabezado y muestra el título de cada celda desde su `data-label`. Para una tabla nueva: clase `yts-stack`, un `data-label` en cada `<td>` (con texto traducido y escapado con `esc_attr`), y si una celda lleva varios elementos, envuélvelos en `<div class="yts-cell-multi">`. Celdas con casilla: clase `yts-col-active` o `yts-col-pick` (título a la izquierda, casilla a la derecha). Calibra el umbral con `node tests/mobile-test.js`: mide desbordes de 320 a 1440 px.
+
+### Cómo se registra una sincronización
+`yts_run()` guarda en la opción `yts_last_log` las filas de la última pasada (manual o automática, solo se conserva la última). Cada fila es `[ programa, video_id, título, fecha, texto, código ]`. El **texto** se traduce y es para leer; el **código** (`created`, `skipped`, `pending`, `dry`, `error`, `info`) no se traduce y es lo que se usa para contar y para el filtro por tipo. Para agregar un tipo nuevo: agrégalo a `yts_log_kinds()` (`admin/page-log.php`) y usa ese código en la fila. La pantalla del registro es la única que lo muestra; las demás solo enlazan a ella cuando una acción recibe `yts_log=1` en `yts_back()`.
 
 ### Usar el selector con buscador en otra pantalla
 Es un `<div class="yts-combo" data-source="mi_lista" data-submit="1">` con un input de texto (`.yts-combo-input`), un input oculto (el valor que se envía) y un `<div class="yts-combo-list" hidden>`. Las opciones salen de `window.YTS.mi_lista = [ { id, title, hint } ]`, que se entrega con `wp_localize_script` en `admin/menu.php`. Con `data-submit="1"` envía el formulario al elegir. Ejemplos: `page-programs.php` (lista `shows`) y `page-videos.php` (lista `programs`).

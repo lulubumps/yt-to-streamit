@@ -2,7 +2,7 @@
 /**
  * Componentes del panel
  *
- * Piezas que se reutilizan en varias páginas: botón Cerrar, informe de verificación y registro de sincronización.
+ * Piezas que se reutilizan en varias páginas: botón Cerrar e informe de verificación.
  *
  * @package YT_To_Streamit
  */
@@ -57,41 +57,5 @@ function yts_render_report() {
 	echo '<textarea id="yts-report-text" class="yts-report-text" readonly rows="6">' . esc_textarea( $text ) . '</textarea>';
 	$js = "var t=document.getElementById('yts-report-text');t.select();document.execCommand('copy');this.textContent=" . $copied . ';';
 	echo '<p><button type="button" class="button" onclick="' . esc_attr( $js ) . '">' . esc_html__( 'Copy report', 'yt-to-streamit' ) . '</button></p>';
-	echo '</div>';
-}
-
-function yts_render_log() {
-	$log = get_option( 'yts_last_log' );
-	if ( ! $log || empty( $log['rows'] ) ) return;
-
-	if ( $log['dry'] ) {
-		/* translators: %s: date and time */
-		$title = sprintf( __( 'Last result (diagnostic, nothing was created) — %s', 'yt-to-streamit' ), $log['time'] );
-	} else {
-		/* translators: %s: date and time */
-		$title = sprintf( __( 'Last result — %s', 'yt-to-streamit' ), $log['time'] );
-	}
-	$l = [
-		'program'   => esc_attr__( 'Program', 'yt-to-streamit' ),
-		'video'     => esc_attr__( 'Video', 'yt-to-streamit' ),
-		'title'     => esc_attr__( 'Title', 'yt-to-streamit' ),
-		'published' => esc_attr__( 'Published on YouTube', 'yt-to-streamit' ),
-		'result'    => esc_attr__( 'Result', 'yt-to-streamit' ),
-	];
-
-	echo '<div id="yts-log-box">' . yts_close_btn( 'log', 'yts-log-box' );
-	echo '<h2>' . esc_html( $title ) . '</h2>';
-	echo '<table class="widefat striped yts-stack"><thead><tr><th>' . esc_html( $l['program'] ) . '</th><th>' . esc_html( $l['video'] ) . '</th><th>' . esc_html( $l['title'] ) . '</th><th>' . esc_html( $l['published'] ) . '</th><th>' . esc_html( $l['result'] ) . '</th></tr></thead><tbody>';
-	foreach ( $log['rows'] as $r ) {
-		$r = array_pad( $r, 5, '' );
-		echo '<tr>';
-		echo '<td data-label="' . $l['program'] . '">' . esc_html( $r[0] ) . '</td>';
-		echo '<td data-label="' . $l['video'] . '">' . esc_html( $r[1] ) . '</td>';
-		echo '<td data-label="' . $l['title'] . '">' . esc_html( $r[2] ) . '</td>';
-		echo '<td data-label="' . $l['published'] . '">' . esc_html( $r[3] ) . '</td>';
-		echo '<td data-label="' . $l['result'] . '">' . esc_html( $r[4] ) . '</td>';
-		echo '</tr>';
-	}
-	echo '</tbody></table>';
 	echo '</div>';
 }

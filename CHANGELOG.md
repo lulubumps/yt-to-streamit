@@ -2,6 +2,14 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [3.7.0]
+
+- **Nueva sección «Registro de sincronización»** (pestaña propia). El resultado de la última sincronización o diagnóstico ya no aparece arriba en *Programas sincronizados* y *Herramientas* cada vez que entras.
+- El registro trae un resumen por tipo (creados, omitidos, pendientes, errores), **filtro por tipo**, búsqueda de texto, paginación (25 por página) y el botón **Borrar registro**.
+- Tras sincronizar o hacer un diagnóstico, un aviso breve trae el enlace «Ver el registro de sincronización».
+- Los avisos ya no dicen «mira el detalle abajo».
+- El filtro de las listas (`assets/admin.js`) ahora puede combinar la búsqueda de texto con un selector de tipo (`data-filter-select` + `data-code`).
+
 ## [3.6.0]
 
 ### Idiomas

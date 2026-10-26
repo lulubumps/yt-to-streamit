@@ -16,6 +16,7 @@ WordPress plugin that **automatically imports the videos of your YouTube playlis
 - Reads YouTube through its **official API** (recommended) or the **RSS feed** as a fallback, with retries.
 - **Works on phones and tablets**: tables become cards on small screens.
 - Available in **English, Spanish and Portuguese**.
+- Saves each episode's **duration** (hours:minutes) from the YouTube API, and can **fill the duration of episodes you already have**.
 - A tool to **repair** episodes that were not linked to their program.
 
 ## Requirements
@@ -48,7 +49,7 @@ Automatic sync runs **every 12 hours** by default (you can change it: 30 min, 1 
 
 ## YouTube API key (recommended)
 
-The YouTube RSS feed fails intermittently (it can answer 404 for hours). With a free API key the plugin reads playlists through the official API and keeps RSS as a fallback.
+The YouTube RSS feed fails intermittently (it can answer 404 for hours). With a free API key the plugin reads playlists through the official API and keeps RSS as a fallback. The key is also required to read each video's **duration**; without it the duration field stays empty.
 
 1. In [Google Cloud](https://console.cloud.google.com/) create a project and enable **YouTube Data API v3**.
 2. Create an **API key** and restrict it to that API.
@@ -84,7 +85,7 @@ More detail in [MANTENIMIENTO.md](MANTENIMIENTO.md) (maintenance guide, in Spani
 ## Development
 
 ```bash
-php tests/smoke-test.php                                          # plugin logic, no WordPress needed (141 checks)
+php tests/smoke-test.php                                          # plugin logic, no WordPress needed (158 checks)
 npm install jsdom --no-save && node tests/panel-test.js           # panel JavaScript (42 checks, optional)
 npm install puppeteer-core @sparticuz/chromium --no-save && node tests/mobile-test.js   # responsive layout in a real browser (116 checks, optional)
 bin/update-translations.sh                                        # refresh .pot/.po/.mo after changing texts

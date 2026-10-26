@@ -16,6 +16,7 @@ Plugin do WordPress que **importa automaticamente os vídeos das suas playlists 
 - Lê o YouTube pela **API oficial** (recomendado) ou pelo **feed RSS** como reserva, com novas tentativas.
 - **Funciona em celulares e tablets**: as tabelas viram cartões em telas pequenas.
 - Disponível em **inglês, espanhol e português**.
+- Salva a **duração** de cada episódio (horas:minutos) a partir da API do YouTube, e pode **preencher a duração de episódios que você já tem**.
 - Ferramenta para **reparar** episódios que não ficaram vinculados ao programa.
 
 ## Requisitos
@@ -48,7 +49,7 @@ A sincronização automática roda **a cada 12 horas** por padrão; você pode m
 
 ## Chave de API do YouTube (recomendada)
 
-O feed RSS do YouTube falha de forma intermitente (pode responder 404 por horas). Com uma chave de API gratuita, o plugin lê as playlists pela API oficial e mantém o RSS como reserva.
+O feed RSS do YouTube falha de forma intermitente (pode responder 404 por horas). Com uma chave de API gratuita, o plugin lê as playlists pela API oficial e mantém o RSS como reserva. A chave também é necessária para ler a **duração** de cada vídeo; sem ela o campo de duração fica vazio.
 
 1. No [Google Cloud](https://console.cloud.google.com/), crie um projeto e ative a **YouTube Data API v3**.
 2. Crie uma **chave de API** e restrinja-a a essa API.
@@ -84,7 +85,7 @@ Mais detalhes em [MANTENIMIENTO.md](MANTENIMIENTO.md) (guia de manutenção, em 
 ## Desenvolvimento
 
 ```bash
-php tests/smoke-test.php                                          # lógica do plugin, sem WordPress (141 verificações)
+php tests/smoke-test.php                                          # lógica do plugin, sem WordPress (158 verificações)
 npm install jsdom --no-save && node tests/panel-test.js           # JavaScript do painel (42 verificações, opcional)
 npm install puppeteer-core @sparticuz/chromium --no-save && node tests/mobile-test.js   # layout responsivo em um navegador real (116 verificações, opcional)
 bin/update-translations.sh                                        # atualiza .pot/.po/.mo depois de mudar textos

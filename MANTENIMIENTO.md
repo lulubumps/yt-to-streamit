@@ -10,6 +10,7 @@ Cómo está armado el plugin y cómo modificarlo sin romperlo.
 | `includes/settings.php` | Lee ajustes (`yts_settings()`), API key, validación de IDs | Agregas un ajuste nuevo |
 | `includes/streamit.php` | **Único lugar que habla con Streamit** (funciones y tablas internas) | Streamit cambia de versión |
 | `includes/videos.php` | **Decide qué hacer con cada video**: ya existe en Streamit, elegido a mano, modo manual/automático, fecha de inicio | Cambias las reglas de qué se importa |
+| `includes/durations.php` | **Duración de los videos**: lee la duración (API de YouTube), la convierte a horas:minutos y completa episodios existentes | Cambias el formato o el redondeo de la duración |
 | `includes/youtube.php` | Lee playlists: API oficial + RSS con reintentos | YouTube cambia algo |
 | `includes/thumbnails.php` | Descarga la miniatura y la convierte a WebP | Cambias calidad o formato |
 | `includes/notifications.php` | Correo al llegar al capítulo N | Cambias el aviso |
@@ -86,6 +87,9 @@ Una tabla con la clase `yts-stack` se convierte en tarjetas cuando el ancho de s
 ### Cómo se registra una sincronización
 `yts_run()` guarda en la opción `yts_last_log` las filas de la última pasada (manual o automática, solo se conserva la última). Cada fila es `[ programa, video_id, título, fecha, texto, código ]`. El **texto** se traduce y es para leer; el **código** (`created`, `skipped`, `pending`, `dry`, `error`, `info`) no se traduce y es lo que se usa para contar y para el filtro por tipo. Para agregar un tipo nuevo: agrégalo a `yts_log_kinds()` (`admin/page-log.php`) y usa ese código en la fila. La pantalla del registro es la única que lo muestra; las demás solo enlazan a ella cuando una acción recibe `yts_log=1` en `yts_back()`.
 
+### Duración de los videos
+`yts_fetch_api()` (`youtube.php`) pide la duración de cada video con `yts_fetch_durations()` (`durations.php`; `videos.list`, una consulta por cada 50 videos) y la deja en `$entry['duration']` como segundos (`null` si no hay: transmisiones en vivo, estrenos o sin API key; el feed RSS no la trae). `yts_import_video()` la guarda en `_episode_run_time` con `yts_format_runtime()`: texto `horas:minutos` sin segundos, que es lo que usa Streamit (`1:05`, `0:45`). Para cambiar el redondeo (hoy, al minuto más cercano y mínimo 1 minuto) edita `yts_format_runtime()`. El campo está en la lista `$skip` de la copia del episodio modelo para que nunca se herede la duración del modelo. La herramienta «Completar duraciones» (`yts_fill_durations()`) solo escribe donde el campo está vacío (`yts_runtime_filled()`).
+
 ### Usar el selector con buscador en otra pantalla
 Es un `<div class="yts-combo" data-source="mi_lista" data-submit="1">` con un input de texto (`.yts-combo-input`), un input oculto (el valor que se envía) y un `<div class="yts-combo-list" hidden>`. Las opciones salen de `window.YTS.mi_lista = [ { id, title, hint } ]`, que se entrega con `wp_localize_script` en `admin/menu.php`. Con `data-submit="1"` envía el formulario al elegir. Ejemplos: `page-programs.php` (lista `shows`) y `page-videos.php` (lista `programs`).
 
@@ -117,7 +121,7 @@ Lo único que depende de Streamit está en `includes/streamit.php` y en `yts_imp
 
 Funciones de Streamit que usa el plugin: `streamit_add_episode`, `streamit_add_episode_meta`, `streamit_update_episode_meta`, `streamit_delete_episode`, `streamit_get_tvshow_meta`, `streamit_add_tvshow_meta`, `streamit_update_tvshow_meta`, y la clase `Streamit_Tvshow` / `Streamit_Episode` (solo para limpiar caché).
 
-Campos que escribe en cada episodio: `_episode_choice` (`episode_embed` o `episode_url`), `_episode_url_link`, `_episode_embed_content`, `_episode_number`, `_episode_release_date`, `thumbnail_id`, `tvshow_id`, y uno propio, `_yts_video_id`. En el programa escribe `_seasons` (lista de temporadas con los IDs de sus episodios).
+Campos que escribe en cada episodio: `_episode_choice` (`episode_embed` o `episode_url`), `_episode_url_link`, `_episode_embed_content`, `_episode_number`, `_episode_release_date`, `_episode_run_time`, `thumbnail_id`, `tvshow_id`, y uno propio, `_yts_video_id`. En el programa escribe `_seasons` (lista de temporadas con los IDs de sus episodios).
 
 Para revisar qué cambió, abre el plugin de Streamit nuevo y compara estos archivos con la versión anterior:
 - `includes/functions/episode/streamit-episode-function.php` (funciones)

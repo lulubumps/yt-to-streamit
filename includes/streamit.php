@@ -93,3 +93,15 @@ function yts_show_title( $id ) {
 	}
 	return isset( $map[ (int) $id ] ) ? $map[ (int) $id ] : '';
 }
+
+/** Limpia la caché de campos de un episodio de Streamit (después de cambiarle un campo por fuera de su formulario). */
+function yts_flush_episode_cache( $episode_id ) {
+	try {
+		if ( class_exists( 'Streamit_Episode' ) ) {
+			$e = new Streamit_Episode( $episode_id );
+			if ( method_exists( $e, 'invalidate_meta_cache' ) ) $e->invalidate_meta_cache();
+		}
+	} catch ( \Throwable $t ) {
+		error_log( '[yts] Could not clear the episode cache: ' . $t->getMessage() );
+	}
+}

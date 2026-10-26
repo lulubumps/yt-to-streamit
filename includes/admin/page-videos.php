@@ -116,13 +116,14 @@ function yts_page_videos() {
 	/* translators: 1: number of videos, 2: source (API or RSS), 3: to import, 4: already in Streamit, 5: not selected, 6: before the start date */
 	echo wp_kses( sprintf( __( '<strong>%1$d videos</strong> (via %2$s): %3$d to import · %4$d already exist in Streamit · %5$d not selected · %6$d before the start date.', 'yt-to-streamit' ), count( $rows ), esc_html( $feed['source'] ), $count['import'], $count['exists'], $count['skip'], $count['old'] ), $kses );
 	echo ' <a href="' . esc_url( add_query_arg( 'refresh', 1, $self ) ) . '">' . esc_html__( 'Refresh list', 'yt-to-streamit' ) . '</a>';
-	if ( 'RSS' === $feed['source'] ) echo '<br><span class="description">' . esc_html__( 'Without an API key you only see the last 15 videos of the playlist. With an API key (Settings) you see up to 500.', 'yt-to-streamit' ) . '</span>';
+	if ( 'RSS' === $feed['source'] ) echo '<br><span class="description">' . esc_html__( 'Without an API key you only see the last 15 videos of the playlist, without their duration. With an API key (Settings) you see up to 500 and their duration.', 'yt-to-streamit' ) . '</span>';
 	echo '</p>';
 
 	$l = [
 		'import'    => esc_attr_x( 'Import', 'column header: import this video', 'yt-to-streamit' ),
 		'title'     => esc_attr__( 'Title on YouTube', 'yt-to-streamit' ),
 		'published' => esc_attr__( 'Published', 'yt-to-streamit' ),
+		'duration'  => esc_attr__( 'Duration', 'yt-to-streamit' ),
 		'status'    => esc_attr__( 'Status', 'yt-to-streamit' ),
 	];
 	?>
@@ -138,8 +139,8 @@ function yts_page_videos() {
 			<button type="button" class="button" data-yts-check="none"><?php esc_html_e( 'Uncheck all', 'yt-to-streamit' ); ?></button>
 		</div>
 
-		<table class="widefat striped yts-paginated yts-stack yts-videos" id="yts-videos-table" data-cards-below="760" data-per-page="25" data-filter="#yts-video-filter">
-			<thead><tr><th class="yts-col-pick"><?php echo esc_html( $l['import'] ); ?></th><th class="yts-col-thumb"></th><th><?php echo esc_html( $l['title'] ); ?></th><th><?php echo esc_html( $l['published'] ); ?></th><th><?php echo esc_html( $l['status'] ); ?></th></tr></thead>
+		<table class="widefat striped yts-paginated yts-stack yts-videos" id="yts-videos-table" data-cards-below="940" data-per-page="25" data-filter="#yts-video-filter">
+			<thead><tr><th class="yts-col-pick"><?php echo esc_html( $l['import'] ); ?></th><th class="yts-col-thumb"></th><th><?php echo esc_html( $l['title'] ); ?></th><th><?php echo esc_html( $l['duration'] ); ?></th><th><?php echo esc_html( $l['published'] ); ?></th><th><?php echo esc_html( $l['status'] ); ?></th></tr></thead>
 			<tbody>
 			<?php foreach ( $rows as $r ) :
 				list( $e, $kind, $note, $ep ) = $r;
@@ -156,6 +157,7 @@ function yts_page_videos() {
 					</td>
 					<td class="yts-col-thumb"><img src="<?php echo esc_url( 'https://i.ytimg.com/vi/' . $e['id'] . '/default.jpg' ); ?>" width="60" alt="" loading="lazy"></td>
 					<td data-label="<?php echo $l['title']; ?>"><a href="<?php echo esc_url( 'https://www.youtube.com/watch?v=' . $e['id'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $e['title'] ); ?></a></td>
+					<td data-label="<?php echo $l['duration']; ?>"><?php echo esc_html( yts_format_clock( isset( $e['duration'] ) ? $e['duration'] : 0 ) ); ?></td>
 					<td data-label="<?php echo $l['published']; ?>"><?php echo esc_html( get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $e['published'] ), 'Y-m-d' ) ); ?></td>
 					<td data-label="<?php echo $l['status']; ?>">
 						<?php

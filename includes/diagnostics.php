@@ -113,6 +113,10 @@ function yts_checks( $write = false ) {
 	if ( ! yts_api_key( $s ) ) $add( 'info', $t_key, __( 'Not set. It is optional but recommended: the YouTube RSS feed fails intermittently.', 'yt-to-streamit' ) );
 	else $add( 'ok', $t_key, __( 'Set (it is used first; RSS stays as a fallback).', 'yt-to-streamit' ) );
 
+	$t_dur = __( 'Video duration', 'yt-to-streamit' );
+	if ( yts_api_key( $s ) ) $add( 'ok', $t_dur, __( 'It is read from the YouTube API and saved in Streamit as hours:minutes.', 'yt-to-streamit' ) );
+	else $add( 'info', $t_dur, __( 'Without an API key it cannot be read (the RSS feed does not include it): the field stays empty.', 'yt-to-streamit' ) );
+
 	/* translators: 1: start date, 2: import status, 3: video method, 4: yes/no */
 	$add( 'info', __( 'Settings', 'yt-to-streamit' ), sprintf( __( 'Import from %1$s · status: %2$s · video: %3$s · WebP thumbnails: %4$s', 'yt-to-streamit' ), substr( $s['import_since'], 0, 10 ), $s['post_status'], $s['video_method'], $s['thumb_webp'] ? $yes : $no ) );
 

@@ -93,6 +93,10 @@ function yts_fetch_api( $playlist, $key ) {
 		if ( ! $token ) break;
 	}
 	usort( $out, function ( $a, $b ) { return $b['published'] <=> $a['published']; } ); // más nuevo primero
+
+	// Duración de cada video (segundos o null): una consulta extra por cada 50 videos
+	$durations = yts_fetch_durations( array_column( $out, 'id' ), $key );
+	foreach ( $out as $i => $e ) $out[ $i ]['duration'] = isset( $durations[ $e['id'] ] ) ? $durations[ $e['id'] ] : null;
 	return [ 'error' => '', 'entries' => $out ];
 }
 

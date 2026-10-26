@@ -167,7 +167,7 @@ function yts_sync_program( $p, $s, $dry = false ) {
 			continue;
 		}
 
-		$r = yts_import_video( $p, $s, compact( 'video_id', 'title', 'published', 'desc' ) );
+		$r = yts_import_video( $p, $s, compact( 'video_id', 'title', 'published', 'desc' ) + [ 'duration' => isset( $e['duration'] ) ? $e['duration'] : null ] );
 		if ( ! is_wp_error( $r ) ) $created++;
 		if ( is_wp_error( $r ) ) {
 			/* translators: %s: error message */
@@ -215,7 +215,7 @@ function yts_import_video( $p, $s, $v ) {
 	$meta = [];
 	if ( $s['template_episode'] ) {
 		$skip = [ 'thumbnail_id', '_episode_number', '_episode_url_link', '_episode_embed_content', '_episode_attachment_id',
-			'_episode_release_date', 'tvshow_id', 'post_views_count', '_yts_video_id' ];
+			'_episode_release_date', 'tvshow_id', 'post_views_count', '_yts_video_id', '_episode_run_time' ];
 		foreach ( (array) get_metadata( 'streamit_episode', (int) $s['template_episode'] ) as $k => $vals ) {
 			if ( in_array( $k, $skip, true ) ) continue;
 			$meta[ $k ] = maybe_unserialize( is_array( $vals ) ? $vals[0] : $vals );
@@ -229,6 +229,11 @@ function yts_import_video( $p, $s, $v ) {
 	$meta['tvshow_id']             = $show_id;
 	$meta['_yts_video_id']         = $v['video_id'];
 	$meta['thumbnail_id']          = yts_sideload( $v['video_id'], $v['title'], $s );
+
+	// Duración «horas:minutos». Si no se conoce (sin API key, transmisión en vivo…) el campo queda vacío:
+	// nunca se copia la del episodio modelo.
+	$runtime = ! empty( $v['duration'] ) ? yts_format_runtime( $v['duration'] ) : '';
+	if ( '' !== $runtime ) $meta['_episode_run_time'] = $runtime;
 
 	if ( 'episode_url' === $s['video_method'] ) {
 		$meta['_episode_url_link'] = $watch;

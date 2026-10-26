@@ -147,6 +147,10 @@ function yts_handle_action() {
 			yts_run( true );
 			yts_back( __( 'Diagnostic ready.', 'yt-to-streamit' ), $ret, [ 'yts_log' => 1 ] );
 
+		case 'fill_durations':
+			$res = yts_fill_durations( ! empty( $_POST['yts_fill_all'] ) );
+			yts_back( $res['msg'], $ret );
+
 		case 'clear_log':
 			delete_option( 'yts_last_log' );
 			yts_back( __( 'Log cleared.', 'yt-to-streamit' ), 'yts-log' );

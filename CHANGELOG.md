@@ -2,6 +2,14 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [3.8.0]
+
+- **Duración de los episodios.** Al importar, el plugin lee la duración de cada video desde la API de YouTube (una consulta extra por cada 50 videos) y la guarda en el campo «Episode Time Duration» de Streamit como horas:minutos (por ejemplo `1:06`), redondeando al minuto más cercano. Sin API key, o para transmisiones en vivo y estrenos, el campo queda vacío.
+- **Corrección:** con un «episodio modelo» configurado, los episodios importados copiaban la duración del modelo. Ese campo ya no se copia nunca.
+- «Videos de la playlist» muestra la duración de cada video (h:mm:ss).
+- Nueva herramienta **Completar duraciones**: llena la duración de los episodios que la tienen vacía (nunca pisa una que ya exista). Siempre incluye los episodios importados por el plugin; con una casilla opcional también los cargados antes (detectados por su video). Hasta 500 por pasada.
+- La verificación del sistema informa si la duración se puede leer (depende de la API key).
+
 ## [3.7.0]
 
 - **Nueva sección «Registro de sincronización»** (pestaña propia). El resultado de la última sincronización o diagnóstico ya no aparece arriba en *Programas sincronizados* y *Herramientas* cada vez que entras.

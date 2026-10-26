@@ -23,6 +23,9 @@ function yts_page_tools() {
 				<td><?php esc_html_e( 'Shows what a sync would do (which videos it would import and which it skips, and why), without creating anything.', 'yt-to-streamit' ); ?></td></tr>
 			<tr><td class="yts-tool-btn"><button type="submit" form="yts-actions" name="yts_do" value="repair" class="button"><?php esc_html_e( 'Repair links', 'yt-to-streamit' ); ?></button></td>
 				<td><?php esc_html_e( 'Links to their program and season the imported episodes that do not appear inside the program.', 'yt-to-streamit' ); ?></td></tr>
+			<tr><td class="yts-tool-btn"><button type="submit" form="yts-actions" name="yts_do" value="fill_durations" class="button"><?php esc_html_e( 'Fill durations', 'yt-to-streamit' ); ?></button></td>
+				<td><?php esc_html_e( 'Reads the duration of the videos from YouTube and fills the “Episode Time Duration” (hours:minutes) of the episodes that have it empty. It needs the YouTube API key.', 'yt-to-streamit' ); ?>
+					<br><label><input type="checkbox" name="yts_fill_all" value="1" form="yts-actions"> <?php esc_html_e( 'Also include episodes that were loaded before (detected by their YouTube video)', 'yt-to-streamit' ); ?></label></td></tr>
 			<tr><td class="yts-tool-btn"><button type="submit" form="yts-actions" name="yts_do" value="test_mail" class="button"><?php esc_html_e( 'Send test email', 'yt-to-streamit' ); ?></button></td>
 				<td><?php esc_html_e( 'Sends an email to the notification address to confirm it arrives (check spam too).', 'yt-to-streamit' ); ?></td></tr>
 		</tbody>

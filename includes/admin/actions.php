@@ -89,6 +89,26 @@ function yts_handle_save() {
 		foreach ( $listed as $id ) $choices[ $id ] = in_array( $id, $pick, true ) ? 1 : 0;
 		yts_set_choices( $playlist, $choices );
 
+		// Temporada y título elegidos para cada video (solo se guarda lo que se aparta del valor por defecto)
+		$n_seasons = yts_ready() ? count( yts_seasons( (int) $s['programs'][ $i ]['show'] ) ) : 0;
+		$post_map  = function ( $key ) {
+			return isset( $_POST[ $key ] ) && is_array( $_POST[ $key ] ) ? wp_unslash( $_POST[ $key ] ) : [];
+		};
+		$p_seasons = $post_map( 'vseason' );
+		$p_titles  = $post_map( 'vtitle' );
+		$p_orig    = $post_map( 'vorig' );
+		$vopts     = yts_get_video_opts( $playlist );
+		foreach ( $listed as $id ) {
+			$season = ( isset( $p_seasons[ $id ] ) && '' !== $p_seasons[ $id ] ) ? absint( $p_seasons[ $id ] ) : '';
+			if ( '' !== $season && $season >= $n_seasons ) $season = ''; // temporada que no existe: se ignora
+			$title = isset( $p_titles[ $id ] ) ? trim( sanitize_text_field( (string) $p_titles[ $id ] ) ) : '';
+			$orig  = isset( $p_orig[ $id ] ) ? trim( sanitize_text_field( (string) $p_orig[ $id ] ) ) : '';
+			if ( function_exists( 'mb_substr' ) ) $title = mb_substr( $title, 0, 255 );
+			if ( $title === $orig ) $title = ''; // igual al de YouTube: no es un título propio
+			if ( '' === $season && '' === $title ) unset( $vopts[ $id ] ); else $vopts[ $id ] = [ 'season' => $season, 'title' => $title ];
+		}
+		yts_set_video_opts( $playlist, $vopts );
+
 		$msg = __( 'Selection saved.', 'yt-to-streamit' );
 		if ( isset( $_POST['yts_after'] ) && 'sync' === $_POST['yts_after'] ) {
 			/* translators: %s: summary of the sync (for example "3 episode(s) created") */
@@ -136,6 +156,23 @@ function yts_handle_action() {
 		$name = ! empty( $p['label'] ) ? $p['label'] : $p['playlist'];
 		/* translators: 1: program name, 2: summary of the sync */
 		yts_back( sprintf( __( 'Program “%1$s” synced: %2$s.', 'yt-to-streamit' ), $name, yts_summary( yts_run( false, $i ) ) ), $ret, [ 'yts_log' => 1 ] );
+	}
+
+	// Crear una temporada nueva en el programa: "add_season:3"
+	if ( 0 === strpos( $do, 'add_season:' ) ) {
+		$i = absint( substr( $do, 11 ) );
+		$s = yts_settings();
+		if ( ! isset( $s['programs'][ $i ] ) ) yts_back( __( 'I could not find that program. Save your changes and try again.', 'yt-to-streamit' ), 'yts-videos' );
+		$name = isset( $_POST['yts_season_name'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['yts_season_name'] ) ) ) : '';
+		if ( function_exists( 'mb_substr' ) ) $name = mb_substr( $name, 0, 100 );
+		if ( '' === $name ) yts_back( __( 'Type a name for the new season.', 'yt-to-streamit' ), 'yts-videos', [ 'program' => $i ] );
+		$show_id   = (int) $s['programs'][ $i ]['show'];
+		$seasons   = yts_seasons( $show_id );
+		$seasons[] = [ 'name' => $name, 'season_year' => gmdate( 'Y' ), 'season_description' => '', 'episodes' => [] ];
+		streamit_update_tvshow_meta( $show_id, '_seasons', $seasons );
+		yts_flush_show_cache( $show_id );
+		/* translators: 1: season name, 2: season number */
+		yts_back( sprintf( __( 'Season “%1$s” created (season %2$d).', 'yt-to-streamit' ), $name, count( $seasons ) ), 'yts-videos', [ 'program' => $i ] );
 	}
 
 	switch ( $do ) {

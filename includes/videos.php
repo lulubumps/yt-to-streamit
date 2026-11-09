@@ -119,3 +119,30 @@ function yts_clean_video_ids( $list ) {
 	}
 	return array_values( $out );
 }
+
+/**
+ * Opciones por video que el usuario eligió en «Videos de la playlist»: la temporada de destino y un título propio.
+ * Se guardan en la opción `yts_video_opts`: [ playlist_id => [ video_id => [ 'season' => índice|'', 'title' => texto ] ] ].
+ * Solo se guarda lo que se aparta del valor por defecto (si no hay nada especial, no hay entrada).
+ */
+function yts_get_video_opts( $playlist ) {
+	$all = get_option( 'yts_video_opts', [] );
+	return ( is_array( $all ) && isset( $all[ $playlist ] ) && is_array( $all[ $playlist ] ) ) ? $all[ $playlist ] : [];
+}
+
+function yts_set_video_opts( $playlist, array $opts ) {
+	$all = get_option( 'yts_video_opts', [] );
+	if ( ! is_array( $all ) ) $all = [];
+	if ( $opts ) $all[ $playlist ] = $opts; else unset( $all[ $playlist ] );
+	update_option( 'yts_video_opts', $all, false );
+}
+
+/** Opciones de un video listas para usar: [ 'season' => int|null (null = la del programa), 'title' => texto propio o '' ]. */
+function yts_video_opts( $p, $video_id ) {
+	$o = yts_get_video_opts( isset( $p['playlist'] ) ? $p['playlist'] : '' );
+	$e = ( isset( $o[ $video_id ] ) && is_array( $o[ $video_id ] ) ) ? $o[ $video_id ] : [];
+	return [
+		'season' => ( isset( $e['season'] ) && '' !== $e['season'] ) ? (int) $e['season'] : null,
+		'title'  => isset( $e['title'] ) ? (string) $e['title'] : '',
+	];
+}

@@ -2,6 +2,16 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [3.9.0]
+
+- **Temporada por video:** en «Videos de la playlist» cada video trae un selector con las temporadas del programa («Predeterminada del programa» o una en concreto). Al importar, el episodio va a la temporada elegida y es el capítulo siguiente de esa temporada.
+- **Título propio por video:** el título es editable antes de importar (se usa también para el enlace del episodio). Se muestra el título original de YouTube si lo cambias.
+- **Acciones para los videos marcados:** aplicar una temporada a todos, y quitar un texto de sus títulos (por ejemplo un prefijo como «Nombre del programa |»), con limpieza automática de los separadores que sobran.
+- **Crear una temporada nueva** desde la misma pantalla (se agrega al programa en Streamit).
+- Prioridad de la temporada: la elegida para el video, luego la del programa y por último la más reciente. Una temporada elegida que ya no existe cae a la del programa.
+- Los videos que ya existen en Streamit siguen bloqueados (no se renombran ni se mueven), y lo ya importado no se modifica.
+- Los umbrales en que las tablas pasan a tarjetas se calibraron midiendo el ancho real de cada tabla (programas y videos).
+
 ## [3.8.0]
 
 - **Duración de los episodios.** Al importar, el plugin lee la duración de cada video desde la API de YouTube (una consulta extra por cada 50 videos) y la guarda en el campo «Episode Time Duration» de Streamit como horas:minutos (por ejemplo `1:06`), redondeando al minuto más cercano. Sin API key, o para transmisiones en vivo y estrenos, el campo queda vacío.

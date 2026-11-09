@@ -3,6 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: YouTube to Streamit 3.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/lulubumps/yt-to-streamit/issues\n"
+"POT-Creation-Date: 2026-11-06 04:32+0000\n"
 "PO-Revision-Date: 2026-10-24 00:00+0000\n"
 "Last-Translator: YouTube to Streamit\n"
 "Language-Team: Spanish (Spain)\n"
@@ -43,7 +44,7 @@ msgstr ""
 "La segunda opción crea un episodio temporal en borrador y lo borra "
 "enseguida, para confirmar que Streamit lo acepta."
 
-#: includes/admin/actions.php:20 includes/admin/actions.php:117
+#: includes/admin/actions.php:20 includes/admin/actions.php:137
 msgid "You do not have permission to do this."
 msgstr "No tienes permiso para hacer esto."
 
@@ -51,59 +52,73 @@ msgstr "No tienes permiso para hacer esto."
 msgid "I could not find that program. Choose it again."
 msgstr "No encontré ese programa. Vuelve a elegirlo."
 
-#: includes/admin/actions.php:92
+#: includes/admin/actions.php:112
 msgid "Selection saved."
 msgstr "Selección guardada."
 
 #. translators: %s: summary of the sync (for example "3 episode(s) created")
-#: includes/admin/actions.php:95
+#: includes/admin/actions.php:115
+#, php-format
 msgid "Selection saved. Sync: %s."
 msgstr "Selección guardada. Sincronización: %s."
 
-#: includes/admin/actions.php:100
+#: includes/admin/actions.php:120
 msgid "I did not understand what to save. Reload the page and try again."
 msgstr "No entendí qué guardar. Recarga la página e inténtalo de nuevo."
 
-#: includes/admin/actions.php:105
+#: includes/admin/actions.php:125
 msgid "Settings saved."
 msgstr "Ajustes guardados."
 
-#: includes/admin/actions.php:134
+#: includes/admin/actions.php:154 includes/admin/actions.php:165
 msgid "I could not find that program. Save your changes and try again."
 msgstr "No encontré ese programa. Guarda los cambios y vuelve a intentarlo."
 
 #. translators: 1: program name, 2: summary of the sync
-#: includes/admin/actions.php:138
+#: includes/admin/actions.php:158
+#, php-format
 msgid "Program “%1$s” synced: %2$s."
 msgstr "Programa «%1$s» sincronizado: %2$s."
 
+#: includes/admin/actions.php:168
+msgid "Type a name for the new season."
+msgstr "Escribe un nombre para la nueva temporada."
+
+#. translators: 1: season name, 2: season number
+#: includes/admin/actions.php:175
+#, php-format
+msgid "Season “%1$s” created (season %2$d)."
+msgstr "Temporada «%1$s» creada (temporada %2$d)."
+
 #. translators: %s: summary of the sync (for example "3 episode(s) created")
-#: includes/admin/actions.php:144
+#: includes/admin/actions.php:181
+#, php-format
 msgid "Sync finished: %s."
 msgstr "Sincronización ejecutada: %s."
 
-#: includes/admin/actions.php:148
+#: includes/admin/actions.php:185
 msgid "Diagnostic ready."
 msgstr "Diagnóstico listo."
 
-#: includes/admin/actions.php:156
+#: includes/admin/actions.php:193
 msgid "Log cleared."
 msgstr "Registro borrado."
 
-#: includes/admin/actions.php:165
+#: includes/admin/actions.php:202
 msgid "Test: YouTube to Streamit"
 msgstr "Prueba: YouTube a Streamit"
 
-#: includes/admin/actions.php:165
+#: includes/admin/actions.php:202
 msgid "If you are reading this, the email notices work."
 msgstr "Si lees esto, los avisos por correo funcionan."
 
 #. translators: %s: email address
-#: includes/admin/actions.php:167
+#: includes/admin/actions.php:204
+#, php-format
 msgid "Test email sent to %s. Also check the spam folder."
 msgstr "Correo de prueba enviado a %s. Revisa también la carpeta de spam."
 
-#: includes/admin/actions.php:167
+#: includes/admin/actions.php:204
 msgid ""
 "WordPress could not send the email. Install an SMTP plugin (e.g. WP Mail "
 "SMTP)."
@@ -111,11 +126,11 @@ msgstr ""
 "WordPress no pudo enviar el correo. Instala un plugin SMTP (ej. WP Mail "
 "SMTP)."
 
-#: includes/admin/actions.php:173
+#: includes/admin/actions.php:210
 msgid "Check finished. See the report below."
 msgstr "Verificación lista. Revisa el informe abajo."
 
-#: includes/admin/actions.php:176
+#: includes/admin/actions.php:213
 msgid "Unknown action."
 msgstr "Acción desconocida."
 
@@ -129,6 +144,7 @@ msgstr "Todavía no hay episodios importados por este plugin."
 
 #. translators: %d: number of episodes
 #: includes/admin/page-imported.php:50
+#, php-format
 msgid ""
 "%d episode(s) imported by this plugin, sorted by program, season and "
 "episode."
@@ -136,7 +152,7 @@ msgstr ""
 "%d episodio(s) importado(s) por este plugin, ordenados por programa, "
 "temporada y capítulo."
 
-#: includes/admin/page-imported.php:54
+#: includes/admin/page-imported.php:54 includes/admin/page-videos.php:138
 msgid "Season"
 msgstr "Temp."
 
@@ -152,7 +168,7 @@ msgstr "Título"
 msgid "Published on YouTube"
 msgstr "Publicado en YouTube"
 
-#: includes/admin/page-imported.php:58 includes/admin/page-videos.php:127
+#: includes/admin/page-imported.php:58 includes/admin/page-videos.php:141
 msgid "Status"
 msgstr "Estado"
 
@@ -166,15 +182,17 @@ msgstr "Sin programa"
 
 #. translators: %d: number of episodes
 #: includes/admin/page-imported.php:90
+#, php-format
 msgid "%d episode(s)"
 msgstr "%d episodio(s)"
 
 #. translators: %d: number of episodes that are not linked to a season
 #: includes/admin/page-imported.php:93
+#, php-format
 msgid "%d not linked (use “Repair links”)"
 msgstr "%d sin enlazar (usa «Reparar enlaces»)"
 
-#: includes/admin/page-imported.php:100 includes/admin/page-videos.php:125
+#: includes/admin/page-imported.php:100 includes/admin/page-videos.php:139
 msgid "Published"
 msgstr "Publicado"
 
@@ -188,15 +206,16 @@ msgstr "Editar"
 
 #. translators: %d: total number of episodes
 #: includes/admin/page-imported.php:113
+#, php-format
 msgid "Showing the first 500 of %d."
 msgstr "Mostrando los primeros 500 de %d."
 
 #: includes/admin/menu.php:19 includes/admin/page-programs.php:90
-#: includes/admin/page-videos.php:38 includes/admin/page-videos.php:83
+#: includes/admin/page-videos.php:51 includes/admin/page-videos.php:96
 msgid "Synced programs"
 msgstr "Programas sincronizados"
 
-#: includes/admin/menu.php:20 includes/admin/page-videos.php:34
+#: includes/admin/menu.php:20 includes/admin/page-videos.php:47
 msgid "Playlist videos"
 msgstr "Videos de la playlist"
 
@@ -227,6 +246,7 @@ msgstr "No hay programas todavía"
 
 #. translators: 1: number of results shown, 2: total number of results
 #: includes/admin/menu.php:66
+#, php-format
 msgid "Showing %1$s of %2$s. Keep typing to narrow it down."
 msgstr "Mostrando %1$s de %2$s. Sigue escribiendo para filtrar."
 
@@ -236,6 +256,7 @@ msgstr "1 elemento"
 
 #. translators: %s: number of items
 #: includes/admin/menu.php:69
+#, php-format
 msgid "%s items"
 msgstr "%s elementos"
 
@@ -257,6 +278,7 @@ msgstr "Última página"
 
 #. translators: 1: current page, 2: total pages
 #: includes/admin/menu.php:75
+#, php-format
 msgid "Page %1$s of %2$s"
 msgstr "Página %1$s de %2$s"
 
@@ -274,6 +296,7 @@ msgstr "Ver el registro de sincronización"
 
 #. translators: %s: error message
 #: includes/admin/menu.php:104
+#, php-format
 msgid "<strong>Last email error:</strong> %s"
 msgstr "<strong>Último error de correo:</strong> %s"
 
@@ -371,6 +394,7 @@ msgstr "+ Agregar programa"
 
 #. translators: %s: the “+ Add program” button label
 #: includes/admin/page-programs.php:117
+#, php-format
 msgid ""
 "There are no programs yet. Press %s, choose the Streamit program, paste its "
 "playlist and save."
@@ -584,11 +608,13 @@ msgstr ""
 
 #. translators: %s: date and time
 #: includes/admin/page-log.php:49
+#, php-format
 msgid "Last result (diagnostic, nothing was created) — %s"
 msgstr "Último resultado (diagnóstico, no se creó nada) — %s"
 
 #. translators: %s: date and time
 #: includes/admin/page-log.php:52
+#, php-format
 msgid "Last result — %s"
 msgstr "Último resultado — %s"
 
@@ -628,24 +654,31 @@ msgstr "Todos los resultados"
 msgid "Clear log"
 msgstr "Borrar registro"
 
+#. translators: %d: season number
+#: includes/admin/page-videos.php:34
+#, php-format
+msgid "Season %d"
+msgstr "Temporada %d"
+
 #. translators: %s: link to the “Synced programs” page
-#: includes/admin/page-videos.php:38
+#: includes/admin/page-videos.php:51
+#, php-format
 msgid "First add a program in %s."
 msgstr "Primero agrega un programa en %s."
 
-#: includes/admin/page-videos.php:49
+#: includes/admin/page-videos.php:62
 msgid "Program:"
 msgstr "Programa:"
 
-#: includes/admin/page-videos.php:51
+#: includes/admin/page-videos.php:64
 msgid "Search synced program…"
 msgstr "Buscar programa sincronizado…"
 
-#: includes/admin/page-videos.php:62
+#: includes/admin/page-videos.php:75
 msgid "View videos"
 msgstr "Ver videos"
 
-#: includes/admin/page-videos.php:67
+#: includes/admin/page-videos.php:80
 msgid ""
 "Choose a program to see the videos of its playlist. You can also come in "
 "with the <strong>Choose videos</strong> button on each row in “Synced "
@@ -655,33 +688,35 @@ msgstr ""
 "con el botón <strong>Elegir videos</strong> de cada fila en «Programas "
 "sincronizados»."
 
-#: includes/admin/page-videos.php:79
+#: includes/admin/page-videos.php:92
 msgid "only the ones you choose"
 msgstr "solo los que elijas"
 
-#: includes/admin/page-videos.php:79
+#: includes/admin/page-videos.php:92
 msgid "all new videos"
 msgstr "todos los nuevos"
 
-#: includes/admin/page-videos.php:81
+#: includes/admin/page-videos.php:94
 msgid "Only the videos you check here are imported."
 msgstr "Solo se importan los videos que marques aquí."
 
-#: includes/admin/page-videos.php:82
+#: includes/admin/page-videos.php:95
 msgid "All new videos are imported, except the ones you uncheck here."
 msgstr "Se importan todos los videos nuevos, salvo los que desmarques aquí."
 
 #. translators: 1: program name, 2: video mode
-#: includes/admin/page-videos.php:87
+#: includes/admin/page-videos.php:100
+#, php-format
 msgid "%1$s — video mode: %2$s."
 msgstr "%1$s — modo de videos: %2$s."
 
 #. translators: %s: link to the “Synced programs” page
-#: includes/admin/page-videos.php:90
+#: includes/admin/page-videos.php:103
+#, php-format
 msgid "The mode is changed in %s (“Videos to import” column)."
 msgstr "El modo se cambia en %s (columna «Videos a importar»)."
 
-#: includes/admin/page-videos.php:91
+#: includes/admin/page-videos.php:104
 msgid ""
 "Videos that are <strong>already loaded in Streamit</strong> are detected by "
 "their link or embed code (even if the title is different) and are skipped "
@@ -692,21 +727,23 @@ msgstr ""
 "solos."
 
 #. translators: %s: error detail
-#: includes/admin/page-videos.php:95
+#: includes/admin/page-videos.php:108
+#, php-format
 msgid "<strong>The playlist could not be read:</strong> %s"
 msgstr "<strong>No se pudo leer la playlist:</strong> %s"
 
-#: includes/admin/page-videos.php:95
+#: includes/admin/page-videos.php:108
 msgid "Retry"
 msgstr "Reintentar"
 
-#: includes/admin/page-videos.php:100
+#: includes/admin/page-videos.php:113
 msgid "The playlist has no videos."
 msgstr "La playlist no trae videos."
 
 #. translators: 1: number of videos, 2: source (API or RSS), 3: to import, 4:
 #. already in Streamit, 5: not selected, 6: before the start date
-#: includes/admin/page-videos.php:117
+#: includes/admin/page-videos.php:130
+#, php-format
 msgid ""
 "<strong>%1$d videos</strong> (via %2$s): %3$d to import · %4$d already exist"
 " in Streamit · %5$d not selected · %6$d before the start date."
@@ -714,11 +751,11 @@ msgstr ""
 "<strong>%1$d videos</strong> (vía %2$s): %3$d por importar · %4$d ya existen"
 " en Streamit · %5$d sin seleccionar · %6$d anteriores a la fecha de inicio."
 
-#: includes/admin/page-videos.php:118
+#: includes/admin/page-videos.php:131
 msgid "Refresh list"
 msgstr "Actualizar lista"
 
-#: includes/admin/page-videos.php:119
+#: includes/admin/page-videos.php:132
 msgid ""
 "Without an API key you only see the last 15 videos of the playlist, without "
 "their duration. With an API key (Settings) you see up to 500 and their "
@@ -727,52 +764,98 @@ msgstr ""
 "Sin API key solo se ven los últimos 15 videos de la playlist, sin su "
 "duración. Con una API key (Ajustes) se ven hasta 500 y su duración."
 
-#: includes/admin/page-videos.php:123
+#: includes/admin/page-videos.php:136
 msgctxt "column header: import this video"
 msgid "Import"
 msgstr "Importar"
 
-#: includes/admin/page-videos.php:124
-msgid "Title on YouTube"
-msgstr "Título en YouTube"
+#: includes/admin/page-videos.php:137
+msgid "Title in Streamit"
+msgstr "Título en Streamit"
 
-#: includes/admin/page-videos.php:126
+#: includes/admin/page-videos.php:140
 msgid "Duration"
 msgstr "Duración"
 
-#: includes/admin/page-videos.php:137
+#: includes/admin/page-videos.php:145
+msgid "Program default"
+msgstr "Predeterminada del programa"
+
+#: includes/admin/page-videos.php:154
 msgid "Filter videos by title…"
 msgstr "Filtrar videos por título…"
 
-#: includes/admin/page-videos.php:138
+#: includes/admin/page-videos.php:155
 msgid "Check all"
 msgstr "Marcar todos"
 
-#: includes/admin/page-videos.php:139
+#: includes/admin/page-videos.php:156
 msgid "Uncheck all"
 msgstr "Desmarcar todos"
 
-#: includes/admin/page-videos.php:152 includes/admin/page-videos.php:165
+#: includes/admin/page-videos.php:161
+msgid "Season for the checked videos:"
+msgstr "Temporada para los videos marcados:"
+
+#: includes/admin/page-videos.php:163 includes/admin/page-videos.php:168
+msgid "Apply to checked"
+msgstr "Aplicar a los marcados"
+
+#: includes/admin/page-videos.php:166
+msgid "Remove this text from the titles of the checked videos:"
+msgstr "Quitar este texto de los títulos de los videos marcados:"
+
+#: includes/admin/page-videos.php:167
+msgid "Text to remove, for example “Show name |”"
+msgstr "Texto a quitar, por ejemplo «Nombre del programa |»"
+
+#: includes/admin/page-videos.php:171
+msgid "New season:"
+msgstr "Nueva temporada:"
+
+#: includes/admin/page-videos.php:172
+msgid "Season name"
+msgstr "Nombre de la temporada"
+
+#: includes/admin/page-videos.php:173
+msgid "Create season"
+msgstr "Crear temporada"
+
+#: includes/admin/page-videos.php:187 includes/admin/page-videos.php:226
 msgid "Already exists in Streamit"
 msgstr "Ya existe en Streamit"
 
-#: includes/admin/page-videos.php:167
+#. translators: %s: original title on YouTube
+#: includes/admin/page-videos.php:208
+#, php-format
+msgid "On YouTube: %s"
+msgstr "En YouTube: %s"
+
+#: includes/admin/page-videos.php:228
 msgid "(imported by this plugin)"
 msgstr "(importado por este plugin)"
 
-#: includes/admin/page-videos.php:169
+#: includes/admin/page-videos.php:230
 msgid "Will be imported"
 msgstr "Se importará"
 
-#: includes/admin/page-videos.php:181
+#: includes/admin/page-videos.php:242
 msgid "Save selection"
 msgstr "Guardar selección"
 
-#: includes/admin/page-videos.php:182
+#: includes/admin/page-videos.php:243
 msgid "Save and import the selected ones now"
 msgstr "Guardar e importar los seleccionados ahora"
 
-#: includes/admin/page-videos.php:184
+#: includes/admin/page-videos.php:245
+msgid ""
+"Titles and seasons you change here are used when the video is imported. A "
+"video that was already imported is not modified."
+msgstr ""
+"Los títulos y temporadas que cambies aquí se usan cuando el video se "
+"importa. Un video que ya se importó no se modifica."
+
+#: includes/admin/page-videos.php:246
 msgid ""
 "Save your choice before leaving the page. If you check a video published "
 "before “Import videos from”, it is imported anyway: your selection takes "
@@ -929,16 +1012,19 @@ msgstr "✕ Cerrar"
 
 #. translators: %s: date and time of the report
 #: includes/admin/components.php:26
+#, php-format
 msgid "YouTube to Streamit REPORT — %s"
 msgstr "INFORME YouTube a Streamit — %s"
 
 #. translators: %d: number of problems
 #: includes/admin/components.php:36
+#, php-format
 msgid "%d problem(s) found that need to be fixed."
 msgstr "Encontré %d problema(s) que hay que resolver."
 
 #. translators: %d: number of warnings
 #: includes/admin/components.php:40
+#, php-format
 msgid "Everything works, but there are %d warning(s) to review."
 msgstr "Todo funciona, pero hay %d advertencia(s) para revisar."
 
@@ -968,16 +1054,19 @@ msgstr "Copiar informe"
 
 #. translators: %d: ID of the program in Streamit
 #: includes/notifications.php:32
+#, php-format
 msgid "Program #%d"
 msgstr "Programa #%d"
 
 #. translators: 1: program name, 2: episode number reached
 #: includes/notifications.php:36
+#, php-format
 msgid "The program \"%1$s\" reached episode %2$d"
 msgstr "El programa \"%1$s\" llegó al capítulo %2$d"
 
 #. translators: 1: program name, 2: number of episodes
 #: includes/notifications.php:38
+#, php-format
 msgid "The program \"%1$s\" now has %2$d episodes on the site."
 msgstr "El programa \"%1$s\" ya tiene %2$d episodios en el sitio."
 
@@ -987,12 +1076,14 @@ msgstr "respuesta no interpretable"
 
 #. translators: %s: last error (for example "HTTP 404")
 #: includes/youtube.php:60
+#, php-format
 msgid "%s after 3 attempts"
 msgstr "%s tras 3 intentos"
 
 #. translators: 1: number of episodes created, 2: number of videos left
 #. pending
 #: includes/importer.php:56
+#, php-format
 msgid ""
 "%1$d episode(s) created, %2$d pending: they will be imported automatically "
 "in a few minutes (you can also sync again)"
@@ -1002,6 +1093,7 @@ msgstr ""
 
 #. translators: %d: number of episodes created
 #: includes/importer.php:59
+#, php-format
 msgid "%d episode(s) created"
 msgstr "%d episodio(s) creado(s)"
 
@@ -1010,7 +1102,8 @@ msgid "A sync is already running. Try again in a few minutes."
 msgstr "Ya hay una sincronización en curso. Intenta de nuevo en unos minutos."
 
 #. translators: %s: error message
-#: includes/importer.php:86 includes/importer.php:174
+#: includes/importer.php:86 includes/importer.php:175
+#, php-format
 msgid "ERROR: %s"
 msgstr "ERROR: %s"
 
@@ -1045,16 +1138,19 @@ msgstr ""
 
 #. translators: %s: error detail
 #: includes/importer.php:129
+#, php-format
 msgid "ERROR reading the playlist (%s)."
 msgstr "ERROR al leer la playlist (%s)."
 
 #. translators: %s: source used to read the playlist (API or RSS)
 #: includes/importer.php:134
+#, php-format
 msgid "The playlist has no videos (%s)."
 msgstr "La playlist no trae videos (%s)."
 
 #. translators: %s: reason why the video is skipped
 #: includes/importer.php:156
+#, php-format
 msgid "Skipped: %s"
 msgstr "Omitido: %s"
 
@@ -1064,6 +1160,7 @@ msgstr "Se importaría."
 
 #. translators: %d: maximum number of imports per run
 #: includes/importer.php:166
+#, php-format
 msgid ""
 "Pending: the limit of %d imports per run was reached; it will be imported on"
 " the next one."
@@ -1072,39 +1169,44 @@ msgstr ""
 " en la próxima."
 
 #. translators: %d: ID of the episode that was created
-#: includes/importer.php:177
+#: includes/importer.php:178
+#, php-format
 msgid "Created (episode #%d)."
 msgstr "Creado (episodio #%d)."
 
-#: includes/importer.php:189 includes/importer.php:280
+#: includes/importer.php:192 includes/importer.php:288
 msgid "Season 1"
 msgstr "Temporada 1"
 
-#: includes/importer.php:208
+#: includes/importer.php:216
 msgid "Streamit did not return an ID"
 msgstr "Streamit no devolvió un ID"
 
 #. translators: %s: reason
-#: includes/importer.php:211
+#: includes/importer.php:219
+#, php-format
 msgid "Could not create the episode: %s"
 msgstr "No se pudo crear el episodio: %s"
 
-#: includes/importer.php:263 includes/durations.php:76
+#: includes/importer.php:271 includes/durations.php:76
 msgid "Streamit is not active."
 msgstr "Streamit no está activo."
 
 #. translators: %s: program name
-#: includes/importer.php:274
+#: includes/importer.php:282
+#, php-format
 msgid "“%s”: nothing to repair."
 msgstr "«%s»: nada que reparar."
 
 #. translators: 1: program name, 2: number of episodes, 3: season number
-#: includes/importer.php:296
+#: includes/importer.php:304
+#, php-format
 msgid "“%1$s”: %2$d episode(s) linked to season %3$d."
 msgstr "«%1$s»: %2$d episodio(s) enlazado(s) a la temporada %3$d."
 
 #. translators: %s: summary per program
-#: includes/importer.php:299
+#: includes/importer.php:307
+#, php-format
 msgid "Repair finished. %s"
 msgstr "Reparación lista. %s"
 
@@ -1114,6 +1216,7 @@ msgstr "ya estaba importado."
 
 #. translators: 1: title of the existing episode, 2: its ID
 #: includes/videos.php:94
+#, php-format
 msgid "it already exists in Streamit as “%1$s” (#%2$d)."
 msgstr "ya existe en Streamit como «%1$s» (#%2$d)."
 
@@ -1131,6 +1234,7 @@ msgstr "modo manual: no lo seleccionaste."
 
 #. translators: %s: start date (YYYY-MM-DD)
 #: includes/videos.php:108
+#, php-format
 msgid "the video was published on YouTube before the “start date” (%s)."
 msgstr "el video se publicó en YouTube antes de la «fecha de inicio» (%s)."
 
@@ -1153,6 +1257,7 @@ msgid "Environment"
 msgstr "Entorno"
 
 #: includes/diagnostics.php:26
+#, php-format
 msgid ""
 "WordPress %1$s · PHP %2$s · time zone %3$s · YouTube to Streamit plugin %4$s"
 msgstr ""
@@ -1165,11 +1270,13 @@ msgstr "Plugin Streamit"
 
 #. translators: %s: version number
 #: includes/diagnostics.php:37
+#, php-format
 msgid "Active, version %s"
 msgstr "Activo, versión %s"
 
 #. translators: %s: version number
 #: includes/diagnostics.php:40
+#, php-format
 msgid "It is installed (v%s) but INACTIVE. Activate it."
 msgstr "Está instalado (v%s) pero INACTIVO. Actívalo."
 
@@ -1183,6 +1290,7 @@ msgstr "Funciones de Streamit"
 
 #. translators: %s: list of function names
 #: includes/diagnostics.php:53
+#, php-format
 msgid "Missing: %s. Probably a different Streamit version."
 msgstr "Faltan: %s. Probablemente otra versión de Streamit."
 
@@ -1192,6 +1300,7 @@ msgstr "Todas las funciones necesarias existen."
 
 #. translators: %s: table name
 #: includes/diagnostics.php:64
+#, php-format
 msgid "Table %s"
 msgstr "Tabla %s"
 
@@ -1205,6 +1314,7 @@ msgid "Streamit tables"
 msgstr "Tablas de Streamit"
 
 #: includes/diagnostics.php:71
+#, php-format
 msgid "They exist. There are %1$d program(s) and %2$d episode(s) in total."
 msgstr "Existen. Hay %1$d programa(s) y %2$d episodio(s) en total."
 
@@ -1255,6 +1365,7 @@ msgstr ""
 #. translators: 1: sync frequency (for example "Every 12 hours"), 2: date and
 #. time of the next run
 #: includes/diagnostics.php:90
+#, php-format
 msgid ""
 "Scheduled: %1$s. Next run: %2$s. (It only runs when someone visits the "
 "site.)"
@@ -1272,11 +1383,13 @@ msgstr "La dirección configurada no es válida."
 
 #. translators: 1: masked email address, 2: error message
 #: includes/diagnostics.php:104
+#, php-format
 msgid "Destination: %1$s. Last sending error: %2$s"
 msgstr "Destino: %1$s. Último error de envío: %2$s"
 
 #. translators: %s: masked email address
 #: includes/diagnostics.php:107
+#, php-format
 msgid "Destination: %s. Use “Send test email” to confirm it arrives."
 msgstr "Destino: %s. Usa «Enviar correo de prueba» para confirmar que llega."
 
@@ -1315,6 +1428,7 @@ msgstr ""
 "vacío."
 
 #: includes/diagnostics.php:121
+#, php-format
 msgid "Import from %1$s · status: %2$s · video: %3$s · WebP thumbnails: %4$s"
 msgstr ""
 "Importar desde %1$s · estado: %2$s · video: %3$s · miniaturas WebP: %4$s"
@@ -1325,11 +1439,13 @@ msgstr "Episodio modelo"
 
 #. translators: 1: episode ID, 2: number of fields
 #: includes/diagnostics.php:128
+#, php-format
 msgid "Episode #%1$d exists and has %2$d fields to copy."
 msgstr "El episodio #%1$d existe y tiene %2$d campos para copiar."
 
 #. translators: %d: episode ID
 #: includes/diagnostics.php:131
+#, php-format
 msgid "Episode #%d does not exist or has no fields."
 msgstr "El episodio #%d no existe o no tiene campos."
 
@@ -1343,6 +1459,7 @@ msgstr ""
 
 #. translators: 1: user display name, 2: user ID
 #: includes/diagnostics.php:142
+#, php-format
 msgid "They will be assigned to %1$s (#%2$d)."
 msgstr "Se asignarán a %1$s (#%2$d)."
 
@@ -1352,6 +1469,7 @@ msgstr "(automático: primer administrador)"
 
 #. translators: %d: user ID
 #: includes/diagnostics.php:147
+#, php-format
 msgid "User #%d does not exist."
 msgstr "El usuario #%d no existe."
 
@@ -1371,6 +1489,7 @@ msgstr ""
 
 #. translators: %s: program name
 #: includes/diagnostics.php:163 includes/diagnostics.php:187
+#, php-format
 msgid "Program “%s”"
 msgstr "Programa «%s»"
 
@@ -1380,6 +1499,7 @@ msgstr "Desactivado: no se sincroniza ni se consulta YouTube."
 
 #. translators: %d: ID of the TV Show
 #: includes/diagnostics.php:172
+#, php-format
 msgid "TV Show #%d does not exist in Streamit."
 msgstr "El TV Show #%d no existe en Streamit."
 
@@ -1389,26 +1509,31 @@ msgstr "Sin aviso configurado."
 
 #. translators: %d: episode number
 #: includes/diagnostics.php:181
+#, php-format
 msgid "It already reached episode %d."
 msgstr "Ya alcanzó el capítulo %d."
 
 #. translators: 1: episode number that triggers the notice, 2: how many
 #. episodes are still missing
 #: includes/diagnostics.php:184
+#, php-format
 msgid "Notice when reaching episode %1$d (%2$d to go)."
 msgstr "Aviso al llegar al capítulo %1$d (faltan %2$d)."
 
 #. translators: 1: number of seasons, 2: number of episodes
 #: includes/diagnostics.php:189
+#, php-format
 msgid "%1$d season(s), %2$d episode(s)"
 msgstr "%1$d temporada(s), %2$d episodio(s)"
 
 #. translators: 1: program name; 2: number of episodes
 #: includes/diagnostics.php:193
+#, php-format
 msgid "Episode ↔ program link “%s”"
 msgstr "Enlace episodios ↔ programa «%s»"
 
 #: includes/diagnostics.php:194
+#, php-format
 msgid ""
 "%d imported episode(s) do not appear inside the program. Press “Repair "
 "links”."
@@ -1418,6 +1543,7 @@ msgstr ""
 
 #. translators: %s: program name
 #: includes/diagnostics.php:199
+#, php-format
 msgid "Playlist of “%s”"
 msgstr "Playlist de «%s»"
 
@@ -1443,12 +1569,14 @@ msgstr ""
 
 #. translators: %s: error detail
 #: includes/diagnostics.php:208
+#, php-format
 msgid "Could not be read: %s."
 msgstr "No se pudo leer: %s."
 
 #. translators: 1: number of videos, 2: source (API or RSS), 3: to import, 4:
 #. already in Streamit, 5: before the start date
 #: includes/diagnostics.php:221
+#, php-format
 msgid ""
 "YouTube returns %1$d video(s) (via %2$s): %3$d to import, %4$d already exist"
 " in Streamit, %5$d before the start date"
@@ -1458,6 +1586,7 @@ msgstr ""
 
 #. translators: %d: number of videos not selected
 #: includes/diagnostics.php:223
+#, php-format
 msgid ", %d not selected"
 msgstr ", %d sin seleccionar"
 
@@ -1475,6 +1604,7 @@ msgstr ""
 
 #. translators: %s: program name
 #: includes/diagnostics.php:237
+#, php-format
 msgid "Thumbnails of “%s”"
 msgstr "Miniaturas de «%s»"
 
@@ -1496,6 +1626,7 @@ msgstr "Omitida: Streamit no está listo (ver errores de arriba)."
 
 #. translators: %s: error message
 #: includes/diagnostics.php:256
+#, php-format
 msgid "Streamit rejected the test episode: %s"
 msgstr "Streamit rechazó el episodio de prueba: %s"
 
@@ -1505,6 +1636,7 @@ msgstr "sin ID"
 
 #. translators: %d: ID of the temporary episode
 #: includes/diagnostics.php:265
+#, php-format
 msgid ""
 "A temporary episode (#%d) was created and deleted. Streamit accepts the "
 "episodes this plugin creates."
@@ -1514,6 +1646,7 @@ msgstr ""
 
 #. translators: 1: episode ID, 2: yes/no (meta saved), 3: yes/no (deleted)
 #: includes/diagnostics.php:268
+#, php-format
 msgid ""
 "Episode #%1$d was created but not everything is in order (meta saved: %2$s, "
 "deleted: %3$s)."
@@ -1566,6 +1699,7 @@ msgstr "Duraciones: no hay nada que completar."
 #. translators: 1: episodes updated, 2: episodes whose video has no duration
 #. available, 3: episodes that already had a duration
 #: includes/durations.php:116
+#, php-format
 msgid ""
 "Durations: %1$d filled, %2$d without available duration, %3$d already had "
 "one."
@@ -1575,5 +1709,9 @@ msgstr ""
 
 #. translators: %d: number of episodes still pending
 #: includes/durations.php:119
+#, php-format
 msgid "%d more are left: press the button again."
 msgstr "Quedan %d por completar: vuelve a presionar el botón."
+
+#~ msgid "Title on YouTube"
+#~ msgstr "Título en YouTube"

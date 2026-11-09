@@ -1,11 +1,12 @@
 /*
  * YouTube a Streamit — panel de administración.
- * Sin dependencias. Hace cinco cosas:
+ * Sin dependencias. Hace seis cosas:
  *   1) Selector con buscador (.yts-combo): programas de Streamit y programas sincronizados, alimentado por window.YTS.
  *   2) Paginación y filtro de tablas (table.yts-paginated). Todas las filas siguen en el formulario aunque estén ocultas.
  *   3) Tabla de programas: agregar, quitar y activar/desactivar filas.
  *   4) Videos de la playlist: botones Marcar todos / Desmarcar todos.
  *   5) Tablas como tarjetas (table.yts-stack → .yts-card-mode) según el ancho del contenedor.
+ *   6) Videos de la playlist: aplicar una temporada o quitar un texto de los títulos de los videos marcados.
  */
 (function () {
 	'use strict';
@@ -287,6 +288,33 @@
 			if (wrap) new ResizeObserver(update).observe(wrap);
 		}
 	}
+
+	/* ---------------- 6) Videos de la playlist: aplicar temporada / quitar texto a los marcados ---------------- */
+	// Quita espacios dobles y separadores que sobran al inicio o al final (-, –, —, |, /, :, ·, •)
+	function cleanTitle(s) {
+		return s.replace(/\s{2,}/g, ' ').replace(/^[\s\-–—|\/:·•]+/, '').replace(/[\s\-–—|\/:·•]+$/, '').trim();
+	}
+	document.addEventListener('click', function (e) {
+		var btn = e.target.closest ? e.target.closest('[data-yts-bulk]') : null;
+		var table = document.getElementById('yts-videos-table');
+		if (!btn || !table) return;
+		var kind = btn.getAttribute('data-yts-bulk');
+		var rows = Array.prototype.filter.call(table.tBodies[0].rows, function (tr) {
+			var c = tr.querySelector('input[type=checkbox][name="pick[]"]');
+			return c && c.checked && !c.disabled;
+		});
+		if (kind === 'season') {
+			var value = document.getElementById('yts-bulk-season').value;
+			each(rows, function (tr) { var sel = tr.querySelector('select[name^="vseason"]'); if (sel) sel.value = value; });
+		} else if (kind === 'strip') {
+			var text = document.getElementById('yts-bulk-strip').value;
+			if (!text) return;
+			each(rows, function (tr) {
+				var inp = tr.querySelector('.yts-title-input');
+				if (inp) inp.value = cleanTitle(inp.value.split(text).join(''));
+			});
+		}
+	});
 
 	function start() {
 		each(document.querySelectorAll('.yts-combo'), initCombo);

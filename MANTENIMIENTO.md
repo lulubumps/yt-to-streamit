@@ -9,7 +9,7 @@ Cómo está armado el plugin y cómo modificarlo sin romperlo.
 | `yt-to-streamit.php` | Arranque: cabecera, versión, carga los demás archivos | Subes de versión |
 | `includes/settings.php` | Lee ajustes (`yts_settings()`), API key, validación de IDs | Agregas un ajuste nuevo |
 | `includes/streamit.php` | **Único lugar que habla con Streamit** (funciones y tablas internas) | Streamit cambia de versión |
-| `includes/videos.php` | **Decide qué hacer con cada video**: ya existe en Streamit, elegido a mano, modo manual/automático, fecha de inicio | Cambias las reglas de qué se importa |
+| `includes/videos.php` | **Decide qué hacer con cada video**: ya existe en Streamit, elegido a mano, modo manual/automático, fecha de inicio; y guarda sus opciones (temporada y título propios) | Cambias las reglas de qué se importa |
 | `includes/durations.php` | **Duración de los videos**: lee la duración (API de YouTube), la convierte a horas:minutos y completa episodios existentes | Cambias el formato o el redondeo de la duración |
 | `includes/youtube.php` | Lee playlists: API oficial + RSS con reintentos | YouTube cambia algo |
 | `includes/thumbnails.php` | Descarga la miniatura y la convierte a WebP | Cambias calidad o formato |
@@ -30,7 +30,7 @@ Cómo está armado el plugin y cómo modificarlo sin romperlo.
 | `assets/admin.js` | Selector con buscador, paginación y filtro, agregar/quitar filas | Cambias el comportamiento del panel |
 | `assets/admin.css` | Estilos del panel y diseño adaptable (tarjetas en pantallas chicas) | Cambias el diseño |
 | `languages/` | Traducciones: `.pot` (plantilla), `.po` (editables) y `.mo` (los que lee WordPress) | Traduces o cambias textos |
-| `bin/update-translations.sh` | Regenera el `.pot`, actualiza los `.po` y compila los `.mo` | Cambiaste textos en el código |
+| `bash bin/update-translations.sh` | Regenera el `.pot`, actualiza los `.po` y compila los `.mo` | Cambiaste textos en el código |
 | `includes/translation-strings.php` | Textos de la cabecera del plugin, solo para las herramientas de traducción (no se carga) | Cambias el nombre o la descripción del plugin |
 | `uninstall.php` | Limpieza al borrar el plugin | Agregas opciones nuevas |
 | `tests/smoke-test.php` | Prueba rápida de la lógica PHP, sin WordPress | Agregas lógica nueva |
@@ -76,10 +76,10 @@ El idioma base es el **inglés**: todo texto visible se escribe en inglés dentr
 /* translators: 1: program name, 2: number of episodes */
 sprintf( __( '“%1$s” has %2$d episodes', 'yt-to-streamit' ), $name, $n );
 ```
-Luego corre `bin/update-translations.sh` y traduce lo nuevo en `languages/yt-to-streamit-es_*.po` y `-pt_*.po` (con Poedit o un editor de texto); vuelve a correr el script para compilar los `.mo`. Los códigos internos (por ejemplo `created`, `pending`) no se traducen: el texto es para leer y el código para decidir.
+Luego corre `bash bin/update-translations.sh` y traduce lo nuevo en `languages/yt-to-streamit-es_*.po` y `-pt_*.po` (con Poedit o un editor de texto); vuelve a correr el script para compilar los `.mo`. Los códigos internos (por ejemplo `created`, `pending`) no se traducen: el texto es para leer y el código para decidir.
 
 ### Traducir el plugin a otro idioma
-Copia `languages/yt-to-streamit.pot` como `languages/yt-to-streamit-xx_YY.po` (por ejemplo `fr_FR`), traduce, corre `bin/update-translations.sh` (genera el `.mo`) y agrega ese idioma a la lista de `README`. La interfaz usa el idioma del sitio o el del usuario (Usuarios → Perfil → Idioma). Los textos del JavaScript viven en `yts_js_strings()` (`admin/menu.php`) y se entregan ya traducidos.
+Copia `languages/yt-to-streamit.pot` como `languages/yt-to-streamit-xx_YY.po` (por ejemplo `fr_FR`), traduce, corre `bash bin/update-translations.sh` (genera el `.mo`) y agrega ese idioma a la lista de `README`. La interfaz usa el idioma del sitio o el del usuario (Usuarios → Perfil → Idioma). Los textos del JavaScript viven en `yts_js_strings()` (`admin/menu.php`) y se entregan ya traducidos.
 
 ### Diseño adaptable: cómo funcionan las tarjetas
 Una tabla con la clase `yts-stack` se convierte en tarjetas cuando el ancho de su contenedor baja de `data-cards-below` (píxeles; 720 por defecto, 1180 la de programas). `assets/admin.js` pone la clase `yts-card-mode` y `assets/admin.css` la dibuja: oculta el encabezado y muestra el título de cada celda desde su `data-label`. Para una tabla nueva: clase `yts-stack`, un `data-label` en cada `<td>` (con texto traducido y escapado con `esc_attr`), y si una celda lleva varios elementos, envuélvelos en `<div class="yts-cell-multi">`. Celdas con casilla: clase `yts-col-active` o `yts-col-pick` (título a la izquierda, casilla a la derecha). Calibra el umbral con `node tests/mobile-test.js`: mide desbordes de 320 a 1440 px.
@@ -89,6 +89,9 @@ Una tabla con la clase `yts-stack` se convierte en tarjetas cuando el ancho de s
 
 ### Duración de los videos
 `yts_fetch_api()` (`youtube.php`) pide la duración de cada video con `yts_fetch_durations()` (`durations.php`; `videos.list`, una consulta por cada 50 videos) y la deja en `$entry['duration']` como segundos (`null` si no hay: transmisiones en vivo, estrenos o sin API key; el feed RSS no la trae). `yts_import_video()` la guarda en `_episode_run_time` con `yts_format_runtime()`: texto `horas:minutos` sin segundos, que es lo que usa Streamit (`1:05`, `0:45`). Para cambiar el redondeo (hoy, al minuto más cercano y mínimo 1 minuto) edita `yts_format_runtime()`. El campo está en la lista `$skip` de la copia del episodio modelo para que nunca se herede la duración del modelo. La herramienta «Completar duraciones» (`yts_fill_durations()`) solo escribe donde el campo está vacío (`yts_runtime_filled()`).
+
+### Temporada y título por video
+Las elecciones del usuario se guardan en la opción `yts_video_opts`: `[ playlist_id => [ video_id => [ 'season' => índice|'', 'title' => texto ] ] ]`; solo hay entrada si se aparta del valor por defecto. Se guardan desde «Videos de la playlist» (`admin/actions.php`, sección `videos`; los campos son `vseason[ID]`, `vtitle[ID]` y `vorig[ID]`, este último con el título original de YouTube para saber si hubo cambio). Al importar, `yts_sync_program()` las lee con `yts_video_opts()` y `yts_import_video()` aplica esta prioridad de temporada: **la del video > la del programa > la última**; una temporada que ya no existe se ignora. El título propio se usa para el episodio y para su enlace. «Crear temporada» (`add_season:N` en `yts_handle_action`) agrega una entrada a `_seasons` del programa en Streamit. Las acciones masivas («aplicar temporada» y «quitar texto») son solo JavaScript (`assets/admin.js`, sección 6) y no guardan nada hasta presionar «Guardar selección».
 
 ### Usar el selector con buscador en otra pantalla
 Es un `<div class="yts-combo" data-source="mi_lista" data-submit="1">` con un input de texto (`.yts-combo-input`), un input oculto (el valor que se envía) y un `<div class="yts-combo-list" hidden>`. Las opciones salen de `window.YTS.mi_lista = [ { id, title, hint } ]`, que se entrega con `wp_localize_script` en `admin/menu.php`. Con `data-submit="1"` envía el formulario al elegir. Ejemplos: `page-programs.php` (lista `shows`) y `page-videos.php` (lista `programs`).
@@ -157,5 +160,5 @@ La carpeta dentro del ZIP debe llamarse `yt-to-streamit`. Súbelo como *Release*
 
 - Traducciones (`__()` + archivos `.po`) con los textos base en inglés.
 - Pasar las funciones a clases con namespace.
-- Soporte de temporadas por playlist (hoy: una temporada elegida por programa).
+- Temporadas automáticas (por fecha, por número de lección o por cantidad de capítulos). Hoy la temporada se elige a mano por programa o por video.
 - Notificaciones adicionales (Slack, WhatsApp) además del correo.

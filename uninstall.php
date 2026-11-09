@@ -9,7 +9,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) exit;
 wp_clear_scheduled_hook( 'yts_sync' );
 wp_clear_scheduled_hook( 'yts_sync_followup' );
 
-foreach ( [ 'yts_settings', 'yts_choices', 'yts_last_log', 'yts_last_report', 'yts_last_mail_error', 'yts_lock' ] as $option ) {
+foreach ( [ 'yts_settings', 'yts_choices', 'yts_video_opts', 'yts_last_log', 'yts_last_report', 'yts_last_mail_error', 'yts_lock' ] as $option ) {
 	delete_option( $option );
 }
 

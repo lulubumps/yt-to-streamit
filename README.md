@@ -12,6 +12,7 @@ WordPress plugin that **automatically imports the videos of your YouTube playlis
 - Own menu **YouTube to Streamit** with seven sections: *Synced programs*, *Playlist videos*, *Settings*, *Tools*, *Imported episodes*, *Sync log* and *System check*.
 - Program picker **with search** and **paginated** lists (built for many programs).
 - **Choose which videos to import**, one by one, and **detect episodes you already had** — even if their title differs from YouTube's.
+- **Choose the season and rename each video** before importing it, apply a season or strip a prefix from many titles at once, and create new seasons from the same screen.
 - Turn programs on/off with a checkbox, or sync a single one by hand.
 - Reads YouTube through its **official API** (recommended) or the **RSS feed** as a fallback, with retries.
 - **Works on phones and tablets**: tables become cards on small screens.
@@ -85,10 +86,10 @@ More detail in [MANTENIMIENTO.md](MANTENIMIENTO.md) (maintenance guide, in Spani
 ## Development
 
 ```bash
-php tests/smoke-test.php                                          # plugin logic, no WordPress needed (158 checks)
-npm install jsdom --no-save && node tests/panel-test.js           # panel JavaScript (42 checks, optional)
+php tests/smoke-test.php                                          # plugin logic, no WordPress needed (171 checks)
+npm install jsdom --no-save && node tests/panel-test.js           # panel JavaScript (46 checks, optional)
 npm install puppeteer-core @sparticuz/chromium --no-save && node tests/mobile-test.js   # responsive layout in a real browser (116 checks, optional)
-bin/update-translations.sh                                        # refresh .pot/.po/.mo after changing texts
+bash bin/update-translations.sh                                   # refresh .pot/.po/.mo after changing texts
 ```
 
 Structure and recipes: [MANTENIMIENTO.md](MANTENIMIENTO.md). Changes: [CHANGELOG.md](CHANGELOG.md).

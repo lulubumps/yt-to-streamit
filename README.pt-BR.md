@@ -12,6 +12,7 @@ Plugin do WordPress que **importa automaticamente os vídeos das suas playlists 
 - Menu próprio **YouTube para Streamit** com sete seções: *Programas sincronizados*, *Vídeos da playlist*, *Configurações*, *Ferramentas*, *Episódios importados*, *Registro de sincronização* e *Verificação do sistema*.
 - Seletor de programa **com busca** e listas **paginadas** (pensado para muitos programas).
 - **Escolha quais vídeos importar**, um por um, e **detecte os episódios que você já tinha** — mesmo que o título seja diferente do do YouTube.
+- **Escolha a temporada e renomeie cada vídeo** antes de importá-lo, aplique uma temporada ou remova um prefixo de vários títulos de uma vez, e crie novas temporadas na mesma tela.
 - Ative ou desative programas com uma caixa de seleção, ou sincronize só um manualmente.
 - Lê o YouTube pela **API oficial** (recomendado) ou pelo **feed RSS** como reserva, com novas tentativas.
 - **Funciona em celulares e tablets**: as tabelas viram cartões em telas pequenas.
@@ -85,10 +86,10 @@ Mais detalhes em [MANTENIMIENTO.md](MANTENIMIENTO.md) (guia de manutenção, em 
 ## Desenvolvimento
 
 ```bash
-php tests/smoke-test.php                                          # lógica do plugin, sem WordPress (158 verificações)
-npm install jsdom --no-save && node tests/panel-test.js           # JavaScript do painel (42 verificações, opcional)
+php tests/smoke-test.php                                          # lógica do plugin, sem WordPress (171 verificações)
+npm install jsdom --no-save && node tests/panel-test.js           # JavaScript do painel (46 verificações, opcional)
 npm install puppeteer-core @sparticuz/chromium --no-save && node tests/mobile-test.js   # layout responsivo em um navegador real (116 verificações, opcional)
-bin/update-translations.sh                                        # atualiza .pot/.po/.mo depois de mudar textos
+bash bin/update-translations.sh                                   # atualiza .pot/.po/.mo depois de mudar textos
 ```
 
 Estrutura e receitas: [MANTENIMIENTO.md](MANTENIMIENTO.md). Histórico de mudanças: [CHANGELOG.md](CHANGELOG.md).

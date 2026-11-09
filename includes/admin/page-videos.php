@@ -24,6 +24,19 @@ function yts_cached_videos( $playlist, $s, $refresh = false ) {
 	return $r;
 }
 
+/** <option> de las temporadas de un programa: «1. Nombre», «2. Nombre»… ($default_label vacío = sin opción por defecto). */
+function yts_season_options( array $seasons, $selected = '', $default_label = '' ) {
+	$html = '';
+	if ( '' !== $default_label ) $html .= '<option value="">' . esc_html( $default_label ) . '</option>';
+	foreach ( $seasons as $k => $se ) {
+		$name = isset( $se['name'] ) ? trim( (string) $se['name'] ) : '';
+		/* translators: %d: season number */
+		$label = ( $k + 1 ) . '. ' . ( '' !== $name ? $name : sprintf( __( 'Season %d', 'yt-to-streamit' ), $k + 1 ) );
+		$html .= '<option value="' . (int) $k . '"' . ( ( '' !== (string) $selected && (string) $selected === (string) $k ) ? ' selected' : '' ) . '>' . esc_html( $label ) . '</option>';
+	}
+	return $html;
+}
+
 function yts_page_videos() {
 	if ( ! current_user_can( 'manage_options' ) ) return;
 	$s    = yts_settings();
@@ -121,11 +134,15 @@ function yts_page_videos() {
 
 	$l = [
 		'import'    => esc_attr_x( 'Import', 'column header: import this video', 'yt-to-streamit' ),
-		'title'     => esc_attr__( 'Title on YouTube', 'yt-to-streamit' ),
+		'title'     => esc_attr__( 'Title in Streamit', 'yt-to-streamit' ),
+		'season'    => esc_attr__( 'Season', 'yt-to-streamit' ),
 		'published' => esc_attr__( 'Published', 'yt-to-streamit' ),
 		'duration'  => esc_attr__( 'Duration', 'yt-to-streamit' ),
 		'status'    => esc_attr__( 'Status', 'yt-to-streamit' ),
 	];
+	$seasons = yts_ready() ? yts_seasons( (int) $p['show'] ) : [];
+	$vopts   = yts_get_video_opts( $p['playlist'] );
+	$default = __( 'Program default', 'yt-to-streamit' );
 	?>
 	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 		<input type="hidden" name="action" value="yts_save">
@@ -139,8 +156,26 @@ function yts_page_videos() {
 			<button type="button" class="button" data-yts-check="none"><?php esc_html_e( 'Uncheck all', 'yt-to-streamit' ); ?></button>
 		</div>
 
-		<table class="widefat striped yts-paginated yts-stack yts-videos" id="yts-videos-table" data-cards-below="940" data-per-page="25" data-filter="#yts-video-filter">
-			<thead><tr><th class="yts-col-pick"><?php echo esc_html( $l['import'] ); ?></th><th class="yts-col-thumb"></th><th><?php echo esc_html( $l['title'] ); ?></th><th><?php echo esc_html( $l['duration'] ); ?></th><th><?php echo esc_html( $l['published'] ); ?></th><th><?php echo esc_html( $l['status'] ); ?></th></tr></thead>
+		<div class="yts-bulk">
+			<div class="yts-bulk-row">
+				<label for="yts-bulk-season"><strong><?php esc_html_e( 'Season for the checked videos:', 'yt-to-streamit' ); ?></strong></label>
+				<select id="yts-bulk-season"><?php echo yts_season_options( $seasons, '', $default ); ?></select>
+				<button type="button" class="button" data-yts-bulk="season"><?php esc_html_e( 'Apply to checked', 'yt-to-streamit' ); ?></button>
+			</div>
+			<div class="yts-bulk-row">
+				<label for="yts-bulk-strip"><strong><?php esc_html_e( 'Remove this text from the titles of the checked videos:', 'yt-to-streamit' ); ?></strong></label>
+				<input type="text" id="yts-bulk-strip" placeholder="<?php esc_attr_e( 'Text to remove, for example “Show name |”', 'yt-to-streamit' ); ?>">
+				<button type="button" class="button" data-yts-bulk="strip"><?php esc_html_e( 'Apply to checked', 'yt-to-streamit' ); ?></button>
+			</div>
+			<div class="yts-bulk-row">
+				<label for="yts-new-season"><strong><?php esc_html_e( 'New season:', 'yt-to-streamit' ); ?></strong></label>
+				<input type="text" id="yts-new-season" name="yts_season_name" form="yts-actions" maxlength="100" placeholder="<?php esc_attr_e( 'Season name', 'yt-to-streamit' ); ?>">
+				<button type="submit" form="yts-actions" name="yts_do" value="add_season:<?php echo (int) $i; ?>" class="button"><?php esc_html_e( 'Create season', 'yt-to-streamit' ); ?></button>
+			</div>
+		</div>
+
+		<table class="widefat striped yts-paginated yts-stack yts-videos" id="yts-videos-table" data-cards-below="960" data-per-page="25" data-filter="#yts-video-filter">
+			<thead><tr><th class="yts-col-pick"><?php echo esc_html( $l['import'] ); ?></th><th class="yts-col-thumb"></th><th><?php echo esc_html( $l['title'] ); ?></th><th><?php echo esc_html( $l['season'] ); ?></th><th><?php echo esc_html( $l['duration'] ); ?></th><th><?php echo esc_html( $l['published'] ); ?></th><th><?php echo esc_html( $l['status'] ); ?></th></tr></thead>
 			<tbody>
 			<?php foreach ( $rows as $r ) :
 				list( $e, $kind, $note, $ep ) = $r;
@@ -156,7 +191,33 @@ function yts_page_videos() {
 						<?php endif; ?>
 					</td>
 					<td class="yts-col-thumb"><img src="<?php echo esc_url( 'https://i.ytimg.com/vi/' . $e['id'] . '/default.jpg' ); ?>" width="60" alt="" loading="lazy"></td>
-					<td data-label="<?php echo $l['title']; ?>"><a href="<?php echo esc_url( 'https://www.youtube.com/watch?v=' . $e['id'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $e['title'] ); ?></a></td>
+					<td data-label="<?php echo $l['title']; ?>">
+						<?php if ( $locked ) : ?>
+							<a href="<?php echo esc_url( 'https://www.youtube.com/watch?v=' . $e['id'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $e['title'] ); ?></a>
+						<?php else :
+							$vo        = isset( $vopts[ $e['id'] ] ) && is_array( $vopts[ $e['id'] ] ) ? $vopts[ $e['id'] ] : [];
+							$cur_title = ! empty( $vo['title'] ) ? $vo['title'] : $e['title'];
+							?>
+							<input type="hidden" name="vorig[<?php echo esc_attr( $e['id'] ); ?>]" value="<?php echo esc_attr( $e['title'] ); ?>">
+							<input type="text" class="yts-title-input" name="vtitle[<?php echo esc_attr( $e['id'] ); ?>]" value="<?php echo esc_attr( $cur_title ); ?>" maxlength="255" aria-label="<?php echo $l['title']; ?>">
+							<small class="description">
+								<a href="<?php echo esc_url( 'https://www.youtube.com/watch?v=' . $e['id'] ); ?>" target="_blank" rel="noopener">YouTube ↗</a>
+								<?php
+								if ( $cur_title !== $e['title'] ) {
+									/* translators: %s: original title on YouTube */
+									echo ' · ' . esc_html( sprintf( __( 'On YouTube: %s', 'yt-to-streamit' ), $e['title'] ) );
+								}
+								?>
+							</small>
+						<?php endif; ?>
+					</td>
+					<td class="yts-col-season" data-label="<?php echo $l['season']; ?>">
+						<?php if ( $locked ) : ?>
+							—
+						<?php else : ?>
+							<select name="vseason[<?php echo esc_attr( $e['id'] ); ?>]"><?php echo yts_season_options( $seasons, isset( $vo['season'] ) ? $vo['season'] : '', $default ); ?></select>
+						<?php endif; ?>
+					</td>
 					<td data-label="<?php echo $l['duration']; ?>"><?php echo esc_html( yts_format_clock( isset( $e['duration'] ) ? $e['duration'] : 0 ) ); ?></td>
 					<td data-label="<?php echo $l['published']; ?>"><?php echo esc_html( get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $e['published'] ), 'Y-m-d' ) ); ?></td>
 					<td data-label="<?php echo $l['status']; ?>">
@@ -181,6 +242,7 @@ function yts_page_videos() {
 			<button type="submit" class="button button-primary"><?php esc_html_e( 'Save selection', 'yt-to-streamit' ); ?></button>
 			<button type="submit" name="yts_after" value="sync" class="button"><?php esc_html_e( 'Save and import the selected ones now', 'yt-to-streamit' ); ?></button>
 		</p>
+		<p class="description"><?php esc_html_e( 'Titles and seasons you change here are used when the video is imported. A video that was already imported is not modified.', 'yt-to-streamit' ); ?></p>
 		<p class="description"><?php esc_html_e( 'Save your choice before leaving the page. If you check a video published before “Import videos from”, it is imported anyway: your selection takes priority over the date.', 'yt-to-streamit' ); ?></p>
 	</form>
 	<?php

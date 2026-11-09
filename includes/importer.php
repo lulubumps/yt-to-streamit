@@ -167,7 +167,8 @@ function yts_sync_program( $p, $s, $dry = false ) {
 			continue;
 		}
 
-		$r = yts_import_video( $p, $s, compact( 'video_id', 'title', 'published', 'desc' ) + [ 'duration' => isset( $e['duration'] ) ? $e['duration'] : null ] );
+		$opts = yts_video_opts( $p, $video_id ); // temporada y título elegidos a mano (si los hay)
+		$r = yts_import_video( $p, $s, compact( 'video_id', 'title', 'published', 'desc' ) + [ 'duration' => isset( $e['duration'] ) ? $e['duration'] : null, 'season' => $opts['season'], 'custom_title' => $opts['title'] ] );
 		if ( ! is_wp_error( $r ) ) $created++;
 		if ( is_wp_error( $r ) ) {
 			/* translators: %s: error message */
@@ -182,24 +183,31 @@ function yts_sync_program( $p, $s, $dry = false ) {
 
 function yts_import_video( $p, $s, $v ) {
 	$show_id = (int) $p['show'];
+	// Título propio (elegido en «Videos de la playlist») o el de YouTube
+	$title = ( isset( $v['custom_title'] ) && '' !== trim( (string) $v['custom_title'] ) ) ? trim( $v['custom_title'] ) : $v['title'];
 
 	// --- Temporada destino (si no hay ninguna, crea "Temporada 1") ---
 	$seasons = yts_seasons( $show_id );
 	if ( ! $seasons ) {
 		$seasons[] = [ 'name' => __( 'Season 1', 'yt-to-streamit' ), 'season_year' => gmdate( 'Y' ), 'season_description' => '', 'episodes' => [] ];
 	}
-	$idx = ( isset( $p['season'] ) && '' !== $p['season'] && isset( $seasons[ (int) $p['season'] ] ) )
-		? (int) $p['season']
-		: count( $seasons ) - 1; // por defecto, la última
+	// Prioridad: temporada elegida para ESTE video > temporada del programa > la última
+	if ( isset( $v['season'] ) && null !== $v['season'] && isset( $seasons[ (int) $v['season'] ] ) ) {
+		$idx = (int) $v['season'];
+	} elseif ( isset( $p['season'] ) && '' !== $p['season'] && isset( $seasons[ (int) $p['season'] ] ) ) {
+		$idx = (int) $p['season'];
+	} else {
+		$idx = count( $seasons ) - 1;
+	}
 	$season_eps = ! empty( $seasons[ $idx ]['episodes'] ) ? (array) $seasons[ $idx ]['episodes'] : [];
 
 	// --- Crear el episodio con la función oficial de Streamit ---
 	$episode_id = streamit_add_episode( [
 		'post_author'       => yts_author( $s ),
-		'post_title'        => wp_strip_all_tags( $v['title'] ),
+		'post_title'        => wp_strip_all_tags( $title ),
 		'post_content'      => wp_kses_post( nl2br( esc_html( $v['desc'] ) ) ),
 		'post_status'       => $s['post_status'],
-		'post_name'         => sanitize_title( $v['title'] ) . '-' . strtolower( $v['video_id'] ), // único
+		'post_name'         => sanitize_title( $title ) . '-' . strtolower( $v['video_id'] ), // único
 		'post_date'         => get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $v['published'] ) ),
 		'post_date_gmt'     => gmdate( 'Y-m-d H:i:s', $v['published'] ),
 	] );
@@ -228,7 +236,7 @@ function yts_import_video( $p, $s, $v ) {
 	$meta['_episode_number']       = count( $season_eps ) + 1;
 	$meta['tvshow_id']             = $show_id;
 	$meta['_yts_video_id']         = $v['video_id'];
-	$meta['thumbnail_id']          = yts_sideload( $v['video_id'], $v['title'], $s );
+	$meta['thumbnail_id']          = yts_sideload( $v['video_id'], $title, $s );
 
 	// Duración «horas:minutos». Si no se conoce (sin API key, transmisión en vivo…) el campo queda vacío:
 	// nunca se copia la del episodio modelo.

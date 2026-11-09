@@ -12,6 +12,7 @@ Plugin de WordPress que **importa automáticamente los videos de tus playlists d
 - Menú propio **YouTube a Streamit** con siete secciones: *Programas sincronizados*, *Videos de la playlist*, *Ajustes*, *Herramientas*, *Episodios importados*, *Registro de sincronización* y *Verificación del sistema*.
 - Selector de programa **con buscador** y listas **paginadas** (pensado para muchos programas).
 - **Elige qué videos importar** (video por video) y **detecta los episodios que ya tenías cargados**, aunque tengan otro título que en YouTube.
+- **Elige la temporada y cambia el nombre de cada video** antes de importarlo, aplica una temporada o quita un prefijo de muchos títulos a la vez, y crea temporadas nuevas desde la misma pantalla.
 - Activa o desactiva programas con una palomita, o sincroniza uno solo a mano.
 - Lee YouTube por su **API oficial** (recomendado) o por el **feed RSS** como respaldo, con reintentos.
 - **Funciona en celulares y tablets**: las tablas se convierten en tarjetas en pantallas chicas.
@@ -85,10 +86,10 @@ Más detalle en [MANTENIMIENTO.md](MANTENIMIENTO.md).
 ## Desarrollo
 
 ```bash
-php tests/smoke-test.php                                          # lógica del plugin, sin WordPress (158 comprobaciones)
-npm install jsdom --no-save && node tests/panel-test.js           # JavaScript del panel (42 comprobaciones, opcional)
+php tests/smoke-test.php                                          # lógica del plugin, sin WordPress (171 comprobaciones)
+npm install jsdom --no-save && node tests/panel-test.js           # JavaScript del panel (46 comprobaciones, opcional)
 npm install puppeteer-core @sparticuz/chromium --no-save && node tests/mobile-test.js   # diseño adaptable en un navegador real (116 comprobaciones, opcional)
-bin/update-translations.sh                                        # actualiza .pot/.po/.mo tras cambiar textos
+bash bin/update-translations.sh                                   # actualiza .pot/.po/.mo tras cambiar textos
 ```
 
 Estructura y recetas para modificar el plugin: [MANTENIMIENTO.md](MANTENIMIENTO.md). Historial de cambios: [CHANGELOG.md](CHANGELOG.md).

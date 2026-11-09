@@ -95,7 +95,7 @@ function yts_page_programs() {
 			<button type="button" class="button button-secondary" id="yts-add"><?php esc_html_e( '+ Add program', 'yt-to-streamit' ); ?></button>
 		</div>
 
-		<table class="widefat striped yts-paginated yts-stack" id="yts-table" data-cards-below="1180" data-per-page="10" data-filter="#yts-list-filter" data-next-index="<?php echo count( $s['programs'] ); ?>">
+		<table class="widefat striped yts-paginated yts-stack" id="yts-table" data-cards-below="1040" data-per-page="10" data-filter="#yts-list-filter" data-next-index="<?php echo count( $s['programs'] ); ?>">
 			<thead><tr>
 				<th class="yts-col-active"><?php echo esc_html( $cols['active'] ); ?></th>
 				<th><?php echo esc_html( $cols['playlist'] ); ?></th>

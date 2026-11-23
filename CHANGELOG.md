@@ -2,7 +2,7 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [3.9.1-rc.1]
+## [3.9.1]
 
 - La sincronización, la creación de temporadas y la reparación de enlaces comparten un bloqueo de base de datos.
 - El importador comprueba los metadatos y la temporada antes de indicar que creó el episodio.

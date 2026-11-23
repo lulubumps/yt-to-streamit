@@ -44,7 +44,7 @@ function yts_fetch_durations( array $ids, $key ) {
 	$out = [];
 	$ids = array_values( array_unique( array_filter( $ids, 'yts_valid_video_id' ) ) );
 	foreach ( array_chunk( $ids, 50 ) as $chunk ) {
-		$res = wp_remote_get( add_query_arg( [ 'part' => 'contentDetails', 'id' => implode( ',', $chunk ), 'key' => $key ], 'https://www.googleapis.com/youtube/v3/videos' ), [ 'timeout' => 20 ] );
+		$res = wp_safe_remote_get( add_query_arg( [ 'part' => 'contentDetails', 'id' => implode( ',', $chunk ), 'key' => $key ], 'https://www.googleapis.com/youtube/v3/videos' ), [ 'timeout' => 20, 'limit_response_size' => 4 * MB_IN_BYTES, 'redirection' => 0 ] );
 		if ( is_wp_error( $res ) || 200 !== wp_remote_retrieve_response_code( $res ) ) {
 			error_log( '[yts] Could not read the video durations from the YouTube API' );
 			continue;

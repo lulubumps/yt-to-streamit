@@ -167,10 +167,20 @@ function yts_handle_action() {
 		if ( function_exists( 'mb_substr' ) ) $name = mb_substr( $name, 0, 100 );
 		if ( '' === $name ) yts_back( __( 'Type a name for the new season.', 'yt-to-streamit' ), 'yts-videos', [ 'program' => $i ] );
 		$show_id   = (int) $s['programs'][ $i ]['show'];
-		$seasons   = yts_seasons( $show_id );
-		$seasons[] = [ 'name' => $name, 'season_year' => gmdate( 'Y' ), 'season_description' => '', 'episodes' => [] ];
-		streamit_update_tvshow_meta( $show_id, '_seasons', $seasons );
-		yts_flush_show_cache( $show_id );
+		if ( ! yts_ready() || ! yts_lock_acquire() ) {
+			yts_back( __( 'Streamit is unavailable or a sync is already running.', 'yt-to-streamit' ), 'yts-videos', [ 'program' => $i ] );
+		}
+		try {
+			$seasons   = yts_seasons( $show_id );
+			$seasons[] = [ 'name' => $name, 'season_year' => gmdate( 'Y' ), 'season_description' => '', 'episodes' => [] ];
+			streamit_update_tvshow_meta( $show_id, '_seasons', $seasons );
+			yts_flush_show_cache( $show_id );
+			$saved = yts_seasons( $show_id );
+			$created = $saved === $seasons;
+		} finally {
+			yts_lock_release();
+		}
+		if ( ! $created ) yts_back( __( 'The new season could not be saved.', 'yt-to-streamit' ), 'yts-videos', [ 'program' => $i ] );
 		/* translators: 1: season name, 2: season number */
 		yts_back( sprintf( __( 'Season “%1$s” created (season %2$d).', 'yt-to-streamit' ), $name, count( $seasons ) ), 'yts-videos', [ 'program' => $i ] );
 	}
@@ -198,8 +208,7 @@ function yts_handle_action() {
 
 		case 'test_mail':
 			$to = yts_mail_to( yts_settings() );
-			delete_option( 'yts_last_mail_error' );
-			$ok = wp_mail( $to, __( 'Test: YouTube to Streamit', 'yt-to-streamit' ), __( 'If you are reading this, the email notices work.', 'yt-to-streamit' ) );
+			$ok = yts_send_mail( $to, __( 'Test: YouTube to Streamit', 'yt-to-streamit' ), __( 'If you are reading this, the email notices work.', 'yt-to-streamit' ) );
 			/* translators: %s: email address */
 			yts_back( $ok ? sprintf( __( 'Test email sent to %s. Also check the spam folder.', 'yt-to-streamit' ), $to ) : __( 'WordPress could not send the email. Install an SMTP plugin (e.g. WP Mail SMTP).', 'yt-to-streamit' ), $ret );
 

@@ -2,6 +2,13 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [3.9.1-rc.1]
+
+- La sincronización, la creación de temporadas y la reparación de enlaces comparten un bloqueo de base de datos.
+- El importador comprueba los metadatos y la temporada antes de indicar que creó el episodio.
+- Los errores de correo del plugin se registran únicamente durante sus propios envíos.
+- Las consultas a YouTube validan redirecciones y limitan el tamaño de las respuestas.
+
 ## [3.9.0]
 
 - **Temporada por video:** en «Videos de la playlist» cada video trae un selector con las temporadas del programa («Predeterminada del programa» o una en concreto). Al importar, el episodio va a la temporada elegida y es el capítulo siguiente de esa temporada.

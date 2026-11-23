@@ -9,9 +9,15 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-add_action( 'wp_mail_failed', function ( $err ) {
-	update_option( 'yts_last_mail_error', $err->get_error_message() );
-} );
+function yts_send_mail( $to, $subject, $message ) {
+	$sent = wp_mail( $to, $subject, $message );
+	if ( $sent ) {
+		delete_option( 'yts_last_mail_error' );
+	} else {
+		update_option( 'yts_last_mail_error', __( 'WordPress could not send the plugin email. Check the mail transport settings.', 'yt-to-streamit' ), false );
+	}
+	return $sent;
+}
 
 function yts_mail_to( $s ) {
 	return $s['notify_email'] ? $s['notify_email'] : get_option( 'admin_email' );
@@ -30,7 +36,7 @@ function yts_check_milestone( $p, $s ) {
 
 	/* translators: %d: ID of the program in Streamit */
 	$label = ! empty( $p['label'] ) ? $p['label'] : sprintf( __( 'Program #%d', 'yt-to-streamit' ), $show_id );
-	$sent  = wp_mail(
+	$sent  = yts_send_mail(
 		yts_mail_to( $s ),
 		/* translators: 1: program name, 2: episode number reached */
 		sprintf( __( 'The program "%1$s" reached episode %2$d', 'yt-to-streamit' ), $label, $target ),
@@ -41,7 +47,6 @@ function yts_check_milestone( $p, $s ) {
 	// Solo se marca como avisado si el correo realmente salió; si falla, reintenta en la próxima pasada
 	if ( $sent ) {
 		update_option( $flag, 1 );
-		delete_option( 'yts_last_mail_error' );
 	} else {
 		error_log( "[yts] Could not send the notice for program $label" );
 	}

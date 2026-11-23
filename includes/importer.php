@@ -10,21 +10,22 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
- * Bloqueo simple para que no corran dos sincronizaciones a la vez (cron + botón).
- * Si un bloqueo tiene más de 10 minutos se asume que una corrida se cortó y se retoma.
+ * Serializa las escrituras del plugin y la detección global de duplicados.
+ * MySQL libera el bloqueo automáticamente si se cierra la conexión.
  */
+function yts_lock_name() {
+	global $wpdb;
+	return 'yts:' . md5( DB_NAME . ':' . $wpdb->options );
+}
+
 function yts_lock_acquire() {
-	if ( add_option( 'yts_lock', time(), '', 'no' ) ) return true;
-	$since = (int) get_option( 'yts_lock' );
-	if ( $since && ( time() - $since ) > 600 ) {
-		update_option( 'yts_lock', time(), false );
-		return true;
-	}
-	return false;
+	global $wpdb;
+	return '1' === (string) $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, 0)', yts_lock_name() ) );
 }
 
 function yts_lock_release() {
-	delete_option( 'yts_lock' );
+	global $wpdb;
+	$wpdb->get_var( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', yts_lock_name() ) );
 }
 
 /**
@@ -252,8 +253,11 @@ function yts_import_video( $p, $s, $v ) {
 	foreach ( $meta as $k => $val ) {
 		streamit_add_episode_meta( $episode_id, $k, $val );
 	}
-	if ( class_exists( 'Streamit_Episode' ) ) {
-		( new Streamit_Episode( $episode_id ) )->invalidate_meta_cache();
+	yts_flush_episode_cache( $episode_id );
+	foreach ( [ '_yts_video_id', 'tvshow_id', '_episode_number', '_episode_choice', 'episode_url' === $s['video_method'] ? '_episode_url_link' : '_episode_embed_content' ] as $k ) {
+		if ( (string) get_metadata( 'streamit_episode', $episode_id, $k, true ) !== (string) $meta[ $k ] ) {
+			return yts_rollback_import( $episode_id, (int) $meta['thumbnail_id'] );
+		}
 	}
 
 	// --- Enlazar el episodio a la temporada del programa ---
@@ -263,12 +267,42 @@ function yts_import_video( $p, $s, $v ) {
 	// (con add_metadata se agregaba una segunda fila y Streamit seguía leyendo la vacía).
 	streamit_update_tvshow_meta( $show_id, '_seasons', $seasons );
 	yts_flush_show_cache( $show_id );
+	$saved = yts_seasons( $show_id );
+	if ( ! in_array( (int) $episode_id, array_map( 'intval', (array) ( $saved[ $idx ]['episodes'] ?? [] ) ), true ) ) {
+		// If Streamit reports the episode in another season, preserve the existing link.
+		foreach ( $saved as $season ) {
+			if ( in_array( (int) $episode_id, array_map( 'intval', (array) ( $season['episodes'] ?? [] ) ), true ) ) {
+				return new WP_Error( 'yts_wrong_season', sprintf( __( 'Episode #%d was linked to an unexpected season.', 'yt-to-streamit' ), $episode_id ) );
+			}
+		}
+		return yts_rollback_import( $episode_id, (int) $meta['thumbnail_id'] );
+	}
 
 	return (int) $episode_id;
 }
 
+function yts_rollback_import( $episode_id, $thumbnail_id ) {
+	global $wpdb;
+	streamit_delete_episode( $episode_id );
+	$remaining = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->streamit_episode} WHERE ID = %d", $episode_id ) );
+	if ( '0' !== (string) $remaining ) {
+		return new WP_Error( 'yts_cleanup', sprintf( __( 'Import incomplete. Review episode #%d before retrying.', 'yt-to-streamit' ), $episode_id ) );
+	}
+	if ( $thumbnail_id ) wp_delete_attachment( $thumbnail_id, true );
+	return new WP_Error( 'yts_incomplete', __( 'The episode could not be saved and linked. It was removed so the import can be retried.', 'yt-to-streamit' ) );
+}
+
 function yts_repair() {
 	if ( ! yts_ready() ) return [ 'total' => 0, 'msg' => __( 'Streamit is not active.', 'yt-to-streamit' ) ];
+	if ( ! yts_lock_acquire() ) return [ 'total' => 0, 'msg' => __( 'A sync is already running. Try again in a few minutes.', 'yt-to-streamit' ) ];
+	try {
+		return yts_repair_locked();
+	} finally {
+		yts_lock_release();
+	}
+}
+
+function yts_repair_locked() {
 	$s     = yts_settings();
 	$total = 0;
 	$lines = [];
@@ -299,9 +333,14 @@ function yts_repair() {
 		streamit_update_tvshow_meta( $show_id, '_seasons', $seasons );
 		yts_flush_show_cache( $show_id );
 
-		$total   += count( $missing );
+		$saved = yts_seasons( $show_id );
+		$linked = array_intersect( $missing, array_map( 'intval', (array) ( $saved[ $idx ]['episodes'] ?? [] ) ) );
+		if ( count( $linked ) !== count( $missing ) ) {
+			$lines[] = sprintf( __( '“%s”: some episode links could not be saved.', 'yt-to-streamit' ), $name );
+		}
+		$total += count( $linked );
 		/* translators: 1: program name, 2: number of episodes, 3: season number */
-		$lines[]  = sprintf( __( '“%1$s”: %2$d episode(s) linked to season %3$d.', 'yt-to-streamit' ), $name, count( $missing ), $idx + 1 );
+		$lines[]  = sprintf( __( '“%1$s”: %2$d episode(s) linked to season %3$d.', 'yt-to-streamit' ), $name, count( $linked ), $idx + 1 );
 	}
 	/* translators: %s: summary per program */
 	return [ 'total' => $total, 'msg' => sprintf( __( 'Repair finished. %s', 'yt-to-streamit' ), implode( ' ', $lines ) ) ];

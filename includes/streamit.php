@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 function yts_ready() {
 	return function_exists( 'streamit_add_episode' )
 		&& function_exists( 'streamit_add_episode_meta' )
+		&& function_exists( 'streamit_delete_episode' )
 		&& function_exists( 'streamit_get_tvshow_meta' )
 		&& function_exists( 'streamit_update_tvshow_meta' );
 }

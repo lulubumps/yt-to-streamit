@@ -144,7 +144,7 @@ Después corre «Verificar + prueba de creación»: si Streamit rechaza el episo
 | `Omitido: ya existe en Streamit como «…»` | El video ya está en un episodio (se detecta por su enlace o embed de YouTube, no por el título) | Normal. Si no debería omitirse, revisa ese episodio |
 | Un episodio antiguo no se detecta y se duplica | Tiene el video subido como archivo, no como enlace de YouTube | Usa el modo «Solo los que elija» y deja ese video sin marcar |
 | `Pendiente: se alcanzó el límite…` | Más videos nuevos que el máximo por pasada | Normal; el plugin continúa solo a los 2 minutos (con WP-Cron, cuando haya una visita). También puedes presionar de nuevo **Sincronizar ahora** |
-| `Ya hay una sincronización en curso` | Otra sincronización está corriendo | Esperar unos minutos (un bloqueo de más de 10 min se retoma solo) |
+| `Ya hay una sincronización en curso` | Otra sincronización está corriendo | Esperar a que termine la operación. MySQL o MariaDB libera el bloqueo al cerrarse la conexión. |
 | Episodios importados que no se ven en el programa | No quedaron enlazados a una temporada | Botón **Reparar enlaces** |
 | El cron no corre, o corre más tarde de lo esperado | WP-Cron solo se dispara con visitas, o está desactivado | Usar «Sincronizar ahora», o programar un cron real del hosting que llame a `wp-cron.php` |
 

@@ -10,9 +10,10 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 function yts_http( $url ) {
-	return wp_remote_get( $url, [
+	return wp_safe_remote_get( $url, [
 		'timeout'     => 20,
 		'redirection' => 3,
+		'limit_response_size' => 4 * MB_IN_BYTES,
 		'headers'     => [
 			'User-Agent'      => 'Mozilla/5.0 (compatible; WordPress; +' . home_url() . ')',
 			'Accept'          => 'application/atom+xml, application/xml;q=0.9, */*;q=0.8',
@@ -32,8 +33,10 @@ function yts_fetch_rss( $playlist ) {
 		} else {
 			$code = wp_remote_retrieve_response_code( $res );
 			if ( 200 === $code ) {
-				libxml_use_internal_errors( true );
-				$xml = simplexml_load_string( wp_remote_retrieve_body( $res ) );
+				$previous = libxml_use_internal_errors( true );
+				$xml = simplexml_load_string( wp_remote_retrieve_body( $res ), 'SimpleXMLElement', LIBXML_NONET );
+				libxml_clear_errors();
+				libxml_use_internal_errors( $previous );
 				if ( $xml ) {
 					$out = [];
 					foreach ( $xml->entry as $e ) {
@@ -68,8 +71,8 @@ function yts_fetch_api( $playlist, $key ) {
 	for ( $page = 0; $page < 10; $page++ ) {
 		$args = [ 'part' => 'snippet,contentDetails', 'maxResults' => 50, 'playlistId' => $playlist, 'key' => $key ];
 		if ( $token ) $args['pageToken'] = $token;
-		$res = wp_remote_get( add_query_arg( $args, 'https://www.googleapis.com/youtube/v3/playlistItems' ), [ 'timeout' => 20 ] );
-		if ( is_wp_error( $res ) ) return [ 'error' => 'API: ' . $res->get_error_message(), 'entries' => [] ];
+		$res = wp_safe_remote_get( add_query_arg( $args, 'https://www.googleapis.com/youtube/v3/playlistItems' ), [ 'timeout' => 20, 'limit_response_size' => 4 * MB_IN_BYTES, 'redirection' => 0 ] );
+		if ( is_wp_error( $res ) ) return [ 'error' => 'API: ' . __( 'YouTube could not be reached.', 'yt-to-streamit' ), 'entries' => [] ];
 
 		$code = wp_remote_retrieve_response_code( $res );
 		$body = json_decode( wp_remote_retrieve_body( $res ), true );

@@ -231,7 +231,7 @@ function yts_checks( $write = false ) {
 		}
 
 		if ( $n ) {
-			$head = wp_remote_head( 'https://i.ytimg.com/vi/' . $feed['entries'][0]['id'] . '/hqdefault.jpg', [ 'timeout' => 15 ] );
+			$head = wp_safe_remote_head( 'https://i.ytimg.com/vi/' . $feed['entries'][0]['id'] . '/hqdefault.jpg', [ 'timeout' => 15 ] );
 			$ok   = ! is_wp_error( $head ) && 200 === wp_remote_retrieve_response_code( $head );
 			/* translators: %s: program name */
 			$add( $ok ? 'ok' : 'warn', sprintf( __( 'Thumbnails of “%s”', 'yt-to-streamit' ), $name ),
